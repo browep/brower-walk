@@ -1,7 +1,7 @@
 # BrowerWalk
 #### A memory-bound proof-of-work algorithm for cryptocurrencies
 
-BrowerWalk is a memory bound proof-of-work algorithm that is resistant to ASIC and GPUs.  It is bounded by the read/write speed and size of the system's Random Access Memory.  The algorithm relies on creating a very large scratchpad ( 512MB currently ) created using a 128bit seed and the xorshift128+ random number generator. 
+BrowerWalk is a memory bound proof-of-work algorithm that is resistant to ASIC and GPUs.  It is bounded by the read/write speed and size of the system's Random Access Memory.  The algorithm relies on creating a very large scratchpad ( 512MB currently ) from a 128bit seed and the xorshift128+ random number generator. 
 
 High level pseudo-code
 
