@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/paul/Development/brower_walk/cpp/brower_walk/main.cpp
+iostream
+-
+stdint.h
+-
+time.h
+-
+ctime
+-
+chrono
+-
+math.h
+-
+vector
+-
+picosha2.h
+/home/paul/Development/brower_walk/cpp/brower_walk/picosha2.h
+cstdio
+-
+cinttypes
+-
+sys/time.h
+-
+thread
+-
+
+/home/paul/Development/brower_walk/cpp/brower_walk/picosha2.h
+algorithm
+-
+cassert
+-
+iterator
+-
+sstream
+-
+vector
+-
+

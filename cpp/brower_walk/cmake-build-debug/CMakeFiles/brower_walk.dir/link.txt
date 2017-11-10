@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/brower_walk.dir/main.cpp.o  -o brower_walk 
