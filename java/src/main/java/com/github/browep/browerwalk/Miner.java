@@ -8,9 +8,8 @@ import java.security.NoSuchAlgorithmException;
 
 public class Miner {
 
-
     private static final int SIZE_IN_MBs = 1024 * 1024 * 512;
-    public static final long NUM_STEPS = (long) Math.pow(2, 19);
+    private static final long NUM_STEPS = (long) Math.pow(2, 19);
 
     private long[] path;
     private XorShifPlusRandomGenerator rng;
@@ -24,7 +23,6 @@ public class Miner {
 
         // slurp data from the binary file
         InputStream inputStream = ClassLoader.getSystemResourceAsStream("block_header.bin");
-
 
         try {
             byte[] headerBytes = Util.readFully(inputStream, -1, true);
