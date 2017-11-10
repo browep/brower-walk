@@ -12,8 +12,7 @@ public class Miner {
 
 
     private static final int SIZE_IN_MBs = 1024 * 1024 * 512;
-    public static final long NUM_STEPS = (long) Math.pow(2, 20);
-    public static final int RESULT_TO_HASH_SIZE = 32;
+    public static final long NUM_STEPS = (long) Math.pow(2, 19);
 
     private long[] path;
     private XorShifPlusRandomGenerator rng;
@@ -91,20 +90,15 @@ public class Miner {
         long walkStartTime = System.currentTimeMillis();
 
         // walk the path
+        md.reset();
+        byte[] byteBuffer = new byte[8];
         int nextStep = 0;
         for (int i = 0; i < NUM_STEPS; i++) {
             long val = path[nextStep];
-            path[nextStep] = (val << 1) + (i % 2);
-            nextStep = (int) Long.remainderUnsigned(val, path.length);
-        }
-
-        // take 32 last steps ( 256 bits ) but dont modify the array
-        md.reset();
-        byte[] byteBuffer = new byte[8];
-        for (int i = 0; i < RESULT_TO_HASH_SIZE; i++) {
-            long val = path[nextStep];
+            long newVal = (val << 1) + (i % 2);
             Util.writeLong(byteBuffer, val);
             md.update(byteBuffer);
+            path[nextStep] = newVal;
             nextStep = (int) Long.remainderUnsigned(val, path.length);
         }
 
