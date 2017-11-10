@@ -1,20 +1,19 @@
 package com.github.browep.browerwalk;
 
-import java.math.BigInteger;
+import sun.misc.IOUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class Miner {
 
 
-
     private static final int SIZE_IN_MBs = 1024 * 1024 * 512;
     public static final long NUM_STEPS = (long) Math.pow(2, 20);
+    public static final int RESULT_TO_HASH_SIZE = 32;
 
     private long[] path;
     private XorShifPlusRandomGenerator rng;
@@ -27,10 +26,20 @@ public class Miner {
     public void start() {
 
         // slurp data from the binary file
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream("block_header.bin");
 
-        Runnable runnable = () -> mine();
 
-        new Thread(runnable).start();
+        try {
+            byte[] headerBytes = IOUtils.readFully(inputStream, -1, true);
+            inputStream.close();
+
+            Runnable runnable = () -> mine(headerBytes);
+
+            new Thread(runnable).start();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -51,17 +60,15 @@ public class Miner {
 
         MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-
         md.update(inputData);
         byte[] seedBytes = md.digest();
 
-        long s0 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 0, 128, 64)).getLong();
-        long s1 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 64, 192, 64)).getLong();
+        long s0 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 0, 16, 8)).getLong();
+        long s1 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 8, 24, 8)).getLong();
 
         long pathCreationStartTime = System.currentTimeMillis();
 
         path = new long[SIZE_IN_MBs / 8];
-
 
         rng = new XorShifPlusRandomGenerator(s0, s1);
 
@@ -81,11 +88,28 @@ public class Miner {
             nextStep = (int) Long.remainderUnsigned(val, path.length);
         }
 
+        md.reset();
+
+        byte[] byteBuffer = new byte[8];
+
+        // last steps calculation
+        for (int i = 0; i < RESULT_TO_HASH_SIZE; i++) {
+            long val = path[nextStep];
+            Util.writeLong(byteBuffer, val);
+            md.update(byteBuffer);
+            nextStep = (int) Long.remainderUnsigned(val, path.length);
+        }
+
+        byte[] finalDigest = md.digest();
+
         log("path creation time: " + pathCreationTime +
                 " walk time: " + getTimeSinceInSeconds(walkStartTime) +
                 " total time: " + getTimeSinceInSeconds(pathCreationStartTime));
 
+        log("final result: " + Util.bytesToHex(finalDigest));
+
         path = null;
+
         System.gc();
 
     }

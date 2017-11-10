@@ -1,5 +1,7 @@
 package com.github.browep.browerwalk;
 
+import java.io.IOException;
+
 public class Util {
     /**
      * do logical XOR of byte arry
@@ -17,6 +19,23 @@ public class Util {
         }
 
         return result;
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte byt : bytes) result.append(Integer.toString((byt & 0xff) + 0x100, 16).substring(1));
+        return result.toString();
+    }
+
+    public static void writeLong(byte[] writeBuffer, long l) {
+        writeBuffer[0] = (byte)(l >>> 56);
+        writeBuffer[1] = (byte)(l >>> 48);
+        writeBuffer[2] = (byte)(l >>> 40);
+        writeBuffer[3] = (byte)(l >>> 32);
+        writeBuffer[4] = (byte)(l >>> 24);
+        writeBuffer[5] = (byte)(l >>> 16);
+        writeBuffer[6] = (byte)(l >>>  8);
+        writeBuffer[7] = (byte)(l);
     }
     
 }
