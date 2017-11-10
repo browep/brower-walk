@@ -9,11 +9,12 @@ import (
 	"runtime"
 	"encoding/binary"
 	"crypto/sha256"
+	"encoding/hex"
 )
 
 var (
 	walkLength512MB uint64 = 1024 * 1024 * 512 / 8;
-	numSteps        uint64 = uint64(math.Pow(2, 19))
+	numSteps               = uint64(math.Pow(2, 19))
 )
 
 func main() {
@@ -25,8 +26,6 @@ func main() {
 		fmt.Printf("could not find %s", blockerHeaderFilePath)
 		return
 	}
-
-
 
 	v, _ := mem.VirtualMemory()
 
@@ -60,7 +59,7 @@ func createPath(blockHeader []byte) []uint64 {
 	start := time.Now()
 
 	sum := sha256.Sum256(blockHeader)
-	fmt.Printf("%x", sum)
+	//fmt.Printf("%x\n", sum)
 
 	s0 := xorByteArray(sum[0:8], sum[16:24])
 	s1 := xorByteArray(sum[8:16], sum[24:32])
@@ -94,8 +93,8 @@ func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan 
 		elapsedWalkTime := t.Sub(startWalk)
 		totalTime := time.Now().Sub(start).Seconds()
 
-		fmt.Sprintf("%d %-10f       %-10d %-10f %d %-10f\n",
-			threadId, elapsedPathCreation.Seconds(), stepCount, elapsedWalkTime.Seconds(), lastStep, totalTime)
+		fmt.Printf("%d %-10f       %-10d %-10f %s %-10f\n",
+			threadId, elapsedPathCreation.Seconds(), stepCount, elapsedWalkTime.Seconds(), hex.EncodeToString(lastStep), totalTime)
 
 		c <- totalTime
 
@@ -103,21 +102,30 @@ func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan 
 
 }
 
-func doWalk(path []uint64, stepCount uint64) uint64 {
+func doWalk(path []uint64, stepCount uint64) []byte {
 
 	pathSize := uint64(len(path))
 
 	nextStep := uint64(0);
 	stepsTaken := uint64(0)
 
+	sha_256 := sha256.New();
+
+	byteBuffer := make([]byte, 8)
+
 	for stepsTaken < stepCount {
 		valueAtLocation := path[nextStep];
-		path[nextStep] = (valueAtLocation << 1) + (stepsTaken % 2)
+		newValueAtLocation := (valueAtLocation << 1) + (stepsTaken % 2)
+		path[nextStep] = newValueAtLocation
+
+		writeLong(byteBuffer, newValueAtLocation)
+		sha_256.Write(byteBuffer)
+
 		nextStep = valueAtLocation % pathSize
 		stepsTaken++
 	}
 
-	return nextStep
+	return sha_256.Sum(nil)
 }
 
 func xorByteArray(leftArr []byte, rightArr []byte) uint64 {
@@ -129,4 +137,15 @@ func xorByteArray(leftArr []byte, rightArr []byte) uint64 {
 	}
 
 	return binary.LittleEndian.Uint64(resArr)
+}
+
+func writeLong(b []byte, l uint64) {
+	b[0] = byte(l >> 56);
+	b[1] = byte(l >> 48);
+	b[2] = byte(l >> 40);
+	b[3] = byte(l >> 32);
+	b[4] = byte(l >> 24);
+	b[5] = byte(l >> 16);
+	b[6] = byte(l >>  8);
+	b[7] = byte(l);
 }
