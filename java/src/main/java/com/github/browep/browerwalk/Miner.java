@@ -1,7 +1,5 @@
 package com.github.browep.browerwalk;
 
-import sun.misc.IOUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -29,7 +27,7 @@ public class Miner {
 
 
         try {
-            byte[] headerBytes = IOUtils.readFully(inputStream, -1, true);
+            byte[] headerBytes = Util.readFully(inputStream, -1, true);
             inputStream.close();
 
             Runnable runnable = () -> mine(headerBytes);
