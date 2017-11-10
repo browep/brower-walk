@@ -113,8 +113,7 @@ func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan 
 func doWalk(path []uint64) []byte {
 
 	pathLength := uint64(len(path))
-	nextStep := pathLength -1 ;
-
+	nextStep := pathLength - 1;
 	sha_256 := sha256.New();
 	byteBuffer := make([]byte, 8)
 
@@ -124,13 +123,12 @@ func doWalk(path []uint64) []byte {
 		path[nextStep] = newValueAtLocation
 
 		binary.BigEndian.PutUint64(byteBuffer, newValueAtLocation)
-
 		sha_256.Write(byteBuffer)
 
 		nextStep = valueAtLocation % pathLength
 
-		if (i < 10) {
-			fmt.Printf("next step: %d\n" , nextStep)
+		if i < 10 || i > numSteps-10 {
+			fmt.Printf("%d next step: %d %d %x\n", i, nextStep, newValueAtLocation, byteBuffer)
 		}
 	}
 

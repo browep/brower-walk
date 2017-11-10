@@ -103,13 +103,15 @@ public class Miner {
         for (int i = 0; i < NUM_STEPS; i++) {
             long val = path[nextStep];
             long newVal = (val << 1) + (i % 2);
-            Util.writeLong(byteBuffer, val);
-            md.update(byteBuffer);
             path[nextStep] = newVal;
+
+            Util.writeLong(byteBuffer, newVal);
+            md.update(byteBuffer);
+
             nextStep = (int) Long.remainderUnsigned(val, path.length);
 
-            if (i < 10) {
-                log("next step: " + nextStep);
+            if (i < 10 || i > NUM_STEPS - 10) {
+                log(i + " next step: " + nextStep + " " + Long.toUnsignedString(newVal) +  "  " + Util.bytesToHex(byteBuffer) + " " );
             }
         }
 
