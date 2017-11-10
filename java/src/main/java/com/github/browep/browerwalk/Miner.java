@@ -56,22 +56,32 @@ public class Miner {
         }
     }
 
+    /**
+     * mine the block using the raw bytes
+     * @param inputData this is the raw data, (block header) to mine.
+     * @throws NoSuchAlgorithmException thrown if the SHA-256 algo is not present on the system
+     */
     private void mineIteration(byte[] inputData) throws NoSuchAlgorithmException {
 
+        // get a SHA-256 digest of the inputdata
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-
         md.update(inputData);
         byte[] seedBytes = md.digest();
 
+        // xor the first quarter with the third quarter, the second with the fourth to create the seed for the
+        // random number generator
         long s0 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 0, 16, 8)).getLong();
         long s1 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 8, 24, 8)).getLong();
 
         long pathCreationStartTime = System.currentTimeMillis();
 
+        // initialize the path ( 512 MB )
         path = new long[SIZE_IN_MBs / 8];
 
+        // create the random number generator, seeded with the xor'ed hash
         rng = new XorShifPlusRandomGenerator(s0, s1);
 
+        // fill the path
         for (int i = 0; i < path.length; i++) {
             path[i] = rng.nextLong();
         }
@@ -80,19 +90,17 @@ public class Miner {
 
         long walkStartTime = System.currentTimeMillis();
 
+        // walk the path
         int nextStep = 0;
-
         for (int i = 0; i < NUM_STEPS; i++) {
             long val = path[nextStep];
             path[nextStep] = (val << 1) + (i % 2);
             nextStep = (int) Long.remainderUnsigned(val, path.length);
         }
 
+        // take 32 last steps ( 256 bits ) but dont modify the array
         md.reset();
-
         byte[] byteBuffer = new byte[8];
-
-        // last steps calculation
         for (int i = 0; i < RESULT_TO_HASH_SIZE; i++) {
             long val = path[nextStep];
             Util.writeLong(byteBuffer, val);
@@ -100,6 +108,7 @@ public class Miner {
             nextStep = (int) Long.remainderUnsigned(val, path.length);
         }
 
+        // hash the last steps.  this is our results and will be compared to what the difficulty determines
         byte[] finalDigest = md.digest();
 
         log("path creation time: " + pathCreationTime +
