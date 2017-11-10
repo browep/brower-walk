@@ -99,7 +99,7 @@ public class Miner {
         // walk the path
         md.reset();
         byte[] byteBuffer = new byte[8];
-        int nextStep = 0;
+        int nextStep = path.length-1;
         for (int i = 0; i < NUM_STEPS; i++) {
             long val = path[nextStep];
             long newVal = (val << 1) + (i % 2);
@@ -107,6 +107,10 @@ public class Miner {
             md.update(byteBuffer);
             path[nextStep] = newVal;
             nextStep = (int) Long.remainderUnsigned(val, path.length);
+
+            if (i < 10) {
+                log("next step: " + nextStep);
+            }
         }
 
         // hash the last steps.  this is our results and will be compared to what the difficulty determines

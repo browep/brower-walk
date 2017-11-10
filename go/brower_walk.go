@@ -69,8 +69,8 @@ func createPath(blockHeader []byte) []uint64 {
 	s0 := xorByteArray(sum[0:8], sum[16:24])
 	s1 := xorByteArray(sum[8:16], sum[24:32])
 
-	fmt.Printf("s0: %d\n" , s0)
-	fmt.Printf("s1: %d\n" , s1)
+	fmt.Printf("s0: %d\n", s0)
+	fmt.Printf("s1: %d\n", s1)
 
 	pathArray := make([]uint64, walkLength512MB)
 
@@ -90,47 +90,48 @@ func createPath(blockHeader []byte) []uint64 {
 
 func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan float64) {
 	//for ; ; {
-		start := time.Now()
-		var path = createPath(blockHeader)
-		t := time.Now()
-		elapsedPathCreation := t.Sub(start)
+	start := time.Now()
+	var path = createPath(blockHeader)
+	t := time.Now()
+	elapsedPathCreation := t.Sub(start)
 
-		startWalk := time.Now()
-		lastStep := doWalk(path, stepCount)
-		t = time.Now()
-		elapsedWalkTime := t.Sub(startWalk)
-		totalTime := time.Now().Sub(start).Seconds()
+	startWalk := time.Now()
+	lastStep := doWalk(path)
+	t = time.Now()
+	elapsedWalkTime := t.Sub(startWalk)
+	totalTime := time.Now().Sub(start).Seconds()
 
-		fmt.Printf("%d %-10f       %-10d %-10f %s %-10f\n",
-			threadId, elapsedPathCreation.Seconds(), stepCount, elapsedWalkTime.Seconds(), hex.EncodeToString(lastStep), totalTime)
+	fmt.Printf("%d %-10f       %-10d %-10f %s %-10f\n",
+		threadId, elapsedPathCreation.Seconds(), stepCount, elapsedWalkTime.Seconds(), hex.EncodeToString(lastStep), totalTime)
 
-		c <- totalTime
+	c <- totalTime
 
 	//}
 
 }
 
-func doWalk(path []uint64, stepCount uint64) []byte {
+func doWalk(path []uint64) []byte {
 
-	pathSize := uint64(len(path))
-
-	nextStep := uint64(0);
-	stepsTaken := uint64(0)
+	pathLength := uint64(len(path))
+	nextStep := pathLength -1 ;
 
 	sha_256 := sha256.New();
-
 	byteBuffer := make([]byte, 8)
 
-	for stepsTaken < stepCount {
+	for i := uint64(0); i < numSteps; i++ {
 		valueAtLocation := path[nextStep];
-		newValueAtLocation := (valueAtLocation << 1) + (stepsTaken % 2)
+		newValueAtLocation := (valueAtLocation << 1) + (i % 2)
 		path[nextStep] = newValueAtLocation
 
-		writeLong(byteBuffer, newValueAtLocation)
+		binary.BigEndian.PutUint64(byteBuffer, newValueAtLocation)
+
 		sha_256.Write(byteBuffer)
 
-		nextStep = valueAtLocation % pathSize
-		stepsTaken++
+		nextStep = valueAtLocation % pathLength
+
+		if (i < 10) {
+			fmt.Printf("next step: %d\n" , nextStep)
+		}
 	}
 
 	return sha_256.Sum(nil)
@@ -147,15 +148,4 @@ func xorByteArray(leftArr []byte, rightArr []byte) uint64 {
 	fmt.Printf("result arr: %x\n", resArr)
 
 	return binary.BigEndian.Uint64(resArr)
-}
-
-func writeLong(b []byte, l uint64) {
-	b[0] = byte(l >> 56);
-	b[1] = byte(l >> 48);
-	b[2] = byte(l >> 40);
-	b[3] = byte(l >> 32);
-	b[4] = byte(l >> 24);
-	b[5] = byte(l >> 16);
-	b[6] = byte(l >>  8);
-	b[7] = byte(l);
 }
