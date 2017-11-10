@@ -59,10 +59,18 @@ func createPath(blockHeader []byte) []uint64 {
 	start := time.Now()
 
 	sum := sha256.Sum256(blockHeader)
-	//fmt.Printf("%x\n", sum)
+	fmt.Printf("%x\n", sum)
+
+	fmt.Printf("leftArr:  %x\n", sum[0:8])
+	fmt.Printf("rightArr:  %x\n", sum[16:24])
+	fmt.Printf("leftArr:  %x\n", sum[8:16])
+	fmt.Printf("rightArr:  %x\n", sum[24:32])
 
 	s0 := xorByteArray(sum[0:8], sum[16:24])
 	s1 := xorByteArray(sum[8:16], sum[24:32])
+
+	fmt.Printf("s0: %d\n" , s0)
+	fmt.Printf("s1: %d\n" , s1)
 
 	pathArray := make([]uint64, walkLength512MB)
 
@@ -81,7 +89,7 @@ func createPath(blockHeader []byte) []uint64 {
 }
 
 func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan float64) {
-	for ; ; {
+	//for ; ; {
 		start := time.Now()
 		var path = createPath(blockHeader)
 		t := time.Now()
@@ -98,7 +106,7 @@ func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan 
 
 		c <- totalTime
 
-	}
+	//}
 
 }
 
@@ -136,7 +144,9 @@ func xorByteArray(leftArr []byte, rightArr []byte) uint64 {
 		resArr[i] = leftArr[i] ^ rightArr[i]
 	}
 
-	return binary.LittleEndian.Uint64(resArr)
+	fmt.Printf("result arr: %x\n", resArr)
+
+	return binary.BigEndian.Uint64(resArr)
 }
 
 func writeLong(b []byte, l uint64) {

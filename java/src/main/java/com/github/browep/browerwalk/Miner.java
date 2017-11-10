@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class Miner {
 
@@ -43,9 +44,9 @@ public class Miner {
         log("started");
 
         try {
-            while (true) {
+//            while (true) {
                 mineIteration(inputData);
-            }
+//            }
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -63,10 +64,20 @@ public class Miner {
         md.update(inputData);
         byte[] seedBytes = md.digest();
 
+        log("seed bytes: "+ Util.bytesToHex(seedBytes));
+
+        log("leftArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 0,8)));
+        log("rightArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 16,24)));
+        log("leftArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 8,16)));
+        log("rightArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 24,32)));
+
         // xor the first quarter with the third quarter, the second with the fourth to create the seed for the
         // random number generator
         long s0 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 0, 16, 8)).getLong();
         long s1 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 8, 24, 8)).getLong();
+
+        log("s0: " + Long.toUnsignedString(s0));
+        log("s1: " + Long.toUnsignedString(s1));
 
         long pathCreationStartTime = System.currentTimeMillis();
 
