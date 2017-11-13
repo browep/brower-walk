@@ -7,6 +7,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import static com.github.browep.browerwalk.Logger.*;
+import static com.github.browep.browerwalk.Logger.LOG_LEVEL.*;
+
 public class Miner {
 
     private static final int SIZE_IN_MBs = 1024 * 1024 * 512;
@@ -41,12 +44,12 @@ public class Miner {
 
     private void mine(byte[] inputData) {
 
-        log("started");
+        log(VERBOSE,"started");
 
         try {
-//            while (true) {
+            while (true) {
                 mineIteration(inputData);
-//            }
+            }
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -64,20 +67,20 @@ public class Miner {
         md.update(inputData);
         byte[] seedBytes = md.digest();
 
-        log("seed bytes: "+ Util.bytesToHex(seedBytes));
+        log(VERBOSE, "seed bytes: "+ Util.bytesToHex(seedBytes));
 
-        log("leftArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 0,8)));
-        log("rightArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 16,24)));
-        log("leftArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 8,16)));
-        log("rightArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 24,32)));
+        log(VERBOSE, "leftArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 0,8)));
+        log(VERBOSE, "rightArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 16,24)));
+        log(VERBOSE,"leftArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 8,16)));
+        log(VERBOSE, "rightArr: " + Util.bytesToHex(Arrays.copyOfRange(seedBytes, 24,32)));
 
         // xor the first quarter with the third quarter, the second with the fourth to create the seed for the
         // random number generator
         long s0 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 0, 16, 8)).getLong();
         long s1 = ByteBuffer.wrap(Util.xorByteArray(seedBytes, 8, 24, 8)).getLong();
 
-        log("s0: " + Long.toUnsignedString(s0));
-        log("s1: " + Long.toUnsignedString(s1));
+        log(VERBOSE, "s0: " + Long.toUnsignedString(s0));
+        log(VERBOSE, "s1: " + Long.toUnsignedString(s1));
 
         long pathCreationStartTime = System.currentTimeMillis();
 
@@ -111,18 +114,19 @@ public class Miner {
             nextStep = (int) Long.remainderUnsigned(val, path.length);
 
             if (i < 10 || i > NUM_STEPS - 10) {
-                log(i + " next step: " + nextStep + " " + Long.toUnsignedString(newVal) +  "  " + Util.bytesToHex(byteBuffer) + " " );
+                log(VERBOSE,i + " next step: " + nextStep + " " + Long.toUnsignedString(newVal) +  "  " + Util.bytesToHex(byteBuffer) + " " );
             }
         }
 
         // hash the last steps.  this is our results and will be compared to what the difficulty determines
         byte[] finalDigest = md.digest();
 
-        log("path creation time: " + pathCreationTime +
+        log(VERBOSE,"final result: " + Util.bytesToHex(finalDigest));
+
+        log(INFO, "path creation time: " + pathCreationTime +
                 " walk time: " + getTimeSinceInSeconds(walkStartTime) +
                 " total time: " + getTimeSinceInSeconds(pathCreationStartTime));
 
-        log("final result: " + Util.bytesToHex(finalDigest));
 
         path = null;
 
@@ -134,8 +138,5 @@ public class Miner {
         return ((float) (System.currentTimeMillis() - pathCreationStartTime)) / 1000;
     }
 
-    private void log(String msg) {
-        System.out.println(tag + ": " + msg);
-    }
 
 }

@@ -21,8 +21,6 @@ public class Util {
             result[i] = (byte) (array[i + leftStart] ^ array[i + rightStart]);
         }
 
-        System.out.println("result arr: " + bytesToHex(result));
-
         return result;
     }
 
