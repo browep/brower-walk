@@ -141,7 +141,7 @@ std::string sha256(unsigned char* bytes, unsigned int bytes_length ) {
     ctx.update(bytes, bytes_length);
     ctx.final(digest);
 
-    return bytesToHex(digest);
+    return bytesToHex(digest, SHA256::DIGEST_SIZE);
 }
 //
 //digest = new unsigned char[SHA256::DIGEST_SIZE];
@@ -155,10 +155,10 @@ void sha256bytes(unsigned char* bytes, unsigned int bytes_length, unsigned char*
 
 }
 
-std::string bytesToHex(const unsigned char *digest) {
-    char buf[2 * SHA256::DIGEST_SIZE + 1];
-    buf[2 * SHA256::DIGEST_SIZE] = 0;
-    for (int i = 0; i < SHA256::DIGEST_SIZE; i++)
+std::string bytesToHex(const unsigned char *digest, unsigned int size) {
+    char buf[2 * size + 1];
+    buf[2 * size] = 0;
+    for (int i = 0; i < size; i++)
         sprintf(buf+i*2, "%02x", digest[i]);
     return std::string(buf);
 }

@@ -16,21 +16,39 @@
 
 #define LOG printf
 
+static const int UINT64_BYTE_COUNT = 8;
 using namespace std;
 
 uint64_t WALK_SIZE = (1024 * 1024 * 512)/8;
 uint64_t NUM_STEPS = pow(2, 19);
 
-/* The state must be seeded so that it is not zero */
-uint64_t s[2];
 
-uint64_t xorshift128plus(void) {
+uint64_t xorshift128plus(uint64_t* s) {
 	uint64_t x = s[0];
 	uint64_t const y = s[1];
 	s[0] = y;
 	x ^= x << 23; // a
 	s[1] = x ^ y ^ (x >> 18) ^ (y >> 5); // b, c
 	return s[1] + y;
+}
+
+uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
+
+    char result[UINT64_BYTE_COUNT];
+
+    for (int i = 0; i < UINT64_BYTE_COUNT; i++) {
+        result[i] = (bytes[i + left_start] ^ bytes[i + right_start]);
+    }
+
+    LOG("arr: %s\n", bytesToHex(reinterpret_cast<const unsigned char *>(result), 8).c_str());
+
+    return result[0]<<(8*7) | result[1]<<(8*6)
+           | result[2]<<(8*5)
+           | result[3]<<(8*4)
+           | result[4]<<(8*3)
+           | result[5]<<(8*2)
+           | result[6]<<(8*1)
+           | result[7];
 }
 
 uint64_t gettime() {
@@ -46,49 +64,34 @@ uint64_t gettime() {
     return millisecondsSinceEpoch;
 }
 
-void tohex(unsigned char * in, size_t insz, char * out, size_t outsz)
-{
-    unsigned char * pin = in;
-    const char * hex = "0123456789ABCDEF";
-    char * pout = out;
-    for(; pin < in+insz; pout +=3, pin++){
-        pout[0] = hex[(*pin>>4) & 0xF];
-        pout[1] = hex[ *pin     & 0xF];
-        pout[2] = ':';
-        if (pout + 3 - out > outsz){
-            /* Better to truncate output string than overflow buffer */
-            /* it would be still better to either return a status */
-            /* or ensure the target buffer is large enough and it never happen */
-            break;
-        }
-    }
-    pout[-1] = 0;
-}
-
 uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
     LOG("block header hash: %s\n", sha256(block_header, block_header_size).c_str());
 
-
     picohash_ctx_t ctx;
-    char header_digest[PICOHASH_MD5_DIGEST_LENGTH];
+    char header_digest[PICOHASH_SHA256_DIGEST_LENGTH];
 
     picohash_init_sha256(&ctx);
     picohash_update(&ctx, block_header, block_header_size);
     picohash_final(&ctx, header_digest);
 
-    LOG("block header hash: %s\n", bytesToHex(reinterpret_cast<const unsigned char *>(header_digest)).c_str());
+    LOG("block header hash: %s\n",
+        bytesToHex(reinterpret_cast<const unsigned char *>(header_digest), SHA256::DIGEST_SIZE).c_str());
 
+    uint64_t s[2];
 
-    s[0] = 0;
-    s[1] = 0;
+    s[0] = xorByteArray(header_digest, 0, 16);
+    s[1] = xorByteArray(header_digest, 8, 24);
+
+    LOG("s0: %llu\n" , s[0]);
+    LOG("s1: %llu\n" , s[1]);
 
     uint64_t start_walk_creation_time = gettime();
 
     auto *walk_path = new uint64_t[WALK_SIZE];
 
     for (int i = 0; i < WALK_SIZE; i++) {
-        walk_path[i] = xorshift128plus();
+        walk_path[i] = xorshift128plus(s);
     }
 
     uint64_t do_walk_start_time = gettime();
