@@ -87,7 +87,10 @@
 		<Unit filename="/home/paul/Development/brower_walk/cpp/brower_walk/main.cpp">
 			<Option target="brower_walk"/>
 		</Unit>
-		<Unit filename="/home/paul/Development/brower_walk/cpp/brower_walk/picosha2.h">
+		<Unit filename="/home/paul/Development/brower_walk/cpp/brower_walk/sha256.cpp">
+			<Option target="brower_walk"/>
+		</Unit>
+		<Unit filename="/home/paul/Development/brower_walk/cpp/brower_walk/sha256.h">
 			<Option target="brower_walk"/>
 		</Unit>
 		<Unit filename="/home/paul/Development/brower_walk/cpp/brower_walk/CMakeLists.txt">

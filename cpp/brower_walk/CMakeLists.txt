@@ -5,6 +5,6 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
         main.cpp
-        picosha2.h)
+        sha256.h sha256.cpp)
 
 add_executable(brower_walk ${SOURCE_FILES})

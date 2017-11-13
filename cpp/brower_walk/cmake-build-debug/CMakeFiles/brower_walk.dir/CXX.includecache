@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/home/paul/Development/brower_walk/cpp/brower_walk/data.h
+
 /home/paul/Development/brower_walk/cpp/brower_walk/main.cpp
 iostream
 -
@@ -21,26 +23,28 @@ math.h
 -
 vector
 -
-picosha2.h
-/home/paul/Development/brower_walk/cpp/brower_walk/picosha2.h
 cstdio
 -
 cinttypes
 -
 sys/time.h
 -
+data.h
+/home/paul/Development/brower_walk/cpp/brower_walk/data.h
 thread
 -
+sha256.h
+/home/paul/Development/brower_walk/cpp/brower_walk/sha256.h
 
-/home/paul/Development/brower_walk/cpp/brower_walk/picosha2.h
-algorithm
+/home/paul/Development/brower_walk/cpp/brower_walk/sha256.cpp
+cstring
 -
-cassert
+fstream
 -
-iterator
--
-sstream
--
-vector
+sha256.h
+/home/paul/Development/brower_walk/cpp/brower_walk/sha256.h
+
+/home/paul/Development/brower_walk/cpp/brower_walk/sha256.h
+string
 -
 

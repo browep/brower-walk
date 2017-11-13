@@ -5,18 +5,19 @@
 #include <chrono>
 #include <math.h>
 #include <vector>
-#include "picosha2.h"
 #include <cstdio>
 #include <cinttypes>
 #include <sys/time.h>
 #include "data.h"
 #include <thread>
+#include "sha256.h"
 
 #define LOG printf
 
 using namespace std;
 
-uint64_t walk_size_512MB = (1024 * 1024 * 512)/8;
+uint64_t WALK_SIZE = (1024 * 1024 * 512)/8;
+uint64_t NUM_STEPS = pow(2, 19);
 
 /* The state must be seeded so that it is not zero */
 uint64_t s[2];
@@ -43,17 +44,41 @@ uint64_t gettime() {
     return millisecondsSinceEpoch;
 }
 
-uint64_t walk_wrapper() {
+void tohex(unsigned char * in, size_t insz, char * out, size_t outsz)
+{
+    unsigned char * pin = in;
+    const char * hex = "0123456789ABCDEF";
+    char * pout = out;
+    for(; pin < in+insz; pout +=3, pin++){
+        pout[0] = hex[(*pin>>4) & 0xF];
+        pout[1] = hex[ *pin     & 0xF];
+        pout[2] = ':';
+        if (pout + 3 - out > outsz){
+            /* Better to truncate output string than overflow buffer */
+            /* it would be still better to either return a status */
+            /* or ensure the target buffer is large enough and it never happen */
+            break;
+        }
+    }
+    pout[-1] = 0;
+}
+
+uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
 
-    s[0] = left_seed;
-    s[1] = right_seed;
+    const string &basic_string = sha256("foo");
+    LOG("test, block header hash: %s\n", basic_string.c_str());
+
+    LOG("block header hash: %s\n", sha256bytes(block_header, block_header_size));
+
+    s[0] = 0;
+    s[1] = 0;
 
     uint64_t start_walk_creation_time = gettime();
 
-    auto *walk_path = new uint64_t[walk_size_512MB];
+    auto *walk_path = new uint64_t[WALK_SIZE];
 
-    for (int i = 0; i < walk_size_512MB; i++) {
+    for (int i = 0; i < WALK_SIZE; i++) {
         walk_path[i] = xorshift128plus();
     }
 
@@ -61,15 +86,15 @@ uint64_t walk_wrapper() {
 
     uint64_t next_step = 0;
 
-    for (int i = 0; i < num_steps; i++) {
+    for (int i = 0; i < NUM_STEPS ; i++) {
         uint64_t val = walk_path[next_step];
-        walk_path[next_step] = (val << 1) + (i % 2);
-        uint64_t last_step = next_step;
-        next_step = val % walk_size;
+        uint64_t newVal = (val << 1) + (i % 2);
+        walk_path[next_step] = newVal;
+        next_step = val % WALK_SIZE;
     }
 
-    LOG("%llu   %f       %llu   %f %llu %f\n",
-        walk_size, (float) (gettime() - start_walk_creation_time) / 1000, walk_size, (float) (gettime() - do_walk_start_time) / 1000, next_step,  (float) (gettime() - start_walk_creation_time) / 1000 );
+    LOG("%f       %f %llu %f\n",
+        (float) (gettime() - start_walk_creation_time) / 1000, (float) (gettime() - do_walk_start_time) / 1000, next_step,  (float) (gettime() - start_walk_creation_time) / 1000 );
 
     delete[] walk_path;
 
@@ -91,7 +116,7 @@ int main()
 
 	LOG("label           pathSize   pathCreationTime walkLength walkTime   lastStep  totalTime\n");
 
-    walk_wrapper();
+    walk_wrapper(block_header, sizeof(block_header));
 
     return 0;
 }
