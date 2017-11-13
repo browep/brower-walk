@@ -22,6 +22,8 @@ using namespace std;
 uint64_t WALK_SIZE = (1024 * 1024 * 512)/8;
 uint64_t NUM_STEPS = pow(2, 19);
 
+long long getLongLong( unsigned char * ca, bool differentEndian );
+
 
 uint64_t xorshift128plus(uint64_t* s) {
 	uint64_t x = s[0];
@@ -42,12 +44,7 @@ uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
 
     LOG("arr: %s\n", bytesToHexStr(reinterpret_cast<const unsigned char *>(result), 8).c_str());
 
-    unsigned long long l = 0;
-    for (int i = 0; i < 8; ++i) {
-        l = l | ((unsigned long long)result[7-i] << (8 * i));
-    }
-
-    return l;
+    return getLongLong(reinterpret_cast<unsigned char *>(result), true);
 }
 
 long long getLongLong( unsigned char * ca, bool differentEndian )
