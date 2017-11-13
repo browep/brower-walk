@@ -151,7 +151,7 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {
     auto *p = (char *)&val;
     for(int i = 0; i < 8; i++) {
-        result[i] = p[i];
+        result[i] = p[7-i];
     }
 }
 
