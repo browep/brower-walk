@@ -40,15 +40,32 @@ uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
         result[i] = (bytes[i + left_start] ^ bytes[i + right_start]);
     }
 
-    LOG("arr: %s\n", bytesToHex(reinterpret_cast<const unsigned char *>(result), 8).c_str());
+    LOG("arr: %s\n", bytesToHexStr(reinterpret_cast<const unsigned char *>(result), 8).c_str());
 
-    return result[0]<<(8*7) | result[1]<<(8*6)
-           | result[2]<<(8*5)
-           | result[3]<<(8*4)
-           | result[4]<<(8*3)
-           | result[5]<<(8*2)
-           | result[6]<<(8*1)
-           | result[7];
+    unsigned long long l = 0;
+    for (int i = 0; i < 8; ++i) {
+        l = l | ((unsigned long long)result[7-i] << (8 * i));
+    }
+
+    return l;
+}
+
+long long getLongLong( unsigned char * ca, bool differentEndian )
+{
+    long long retVal;
+
+    if (differentEndian)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            unsigned char _tmpCh = ca[i];
+            ca[i] = ca[7-i];
+            ca[7-i] = _tmpCh;
+        }
+    }
+    retVal = *reinterpret_cast<unsigned long long *>(ca);
+
+    return retVal;
 }
 
 uint64_t gettime() {
@@ -76,7 +93,7 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     picohash_final(&ctx, header_digest);
 
     LOG("block header hash: %s\n",
-        bytesToHex(reinterpret_cast<const unsigned char *>(header_digest), SHA256::DIGEST_SIZE).c_str());
+        bytesToHexStr(reinterpret_cast<const unsigned char *>(header_digest), SHA256::DIGEST_SIZE).c_str());
 
     uint64_t s[2];
 

@@ -27,7 +27,7 @@ protected:
 
 std::string sha256(std::string input);
 std::string sha256(unsigned char* bytes, unsigned int bytes_length );
-std::string bytesToHex(const unsigned char *digest, unsigned int size);
+std::string bytesToHexStr(const unsigned char *digest, unsigned int size);
 void sha256bytes(unsigned char* bytes, unsigned int bytes_length, unsigned char* digest );
 
 #define SHA2_SHFR(x, n)    (x >> n)
