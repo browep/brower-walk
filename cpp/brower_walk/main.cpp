@@ -65,11 +65,7 @@ void tohex(unsigned char * in, size_t insz, char * out, size_t outsz)
 
 uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
-
-    const string &basic_string = sha256("foo");
-    LOG("test, block header hash: %s\n", basic_string.c_str());
-
-    LOG("block header hash: %s\n", sha256bytes(block_header, block_header_size));
+    LOG("block header hash: %s\n", sha256(block_header, block_header_size).c_str());
 
     s[0] = 0;
     s[1] = 0;

@@ -131,7 +131,7 @@ std::string sha256(std::string input)
     return std::string(buf);
 }
 
-std::string sha256bytes(unsigned char* bytes, unsigned int bytes_length ) {
+std::string sha256(unsigned char* bytes, unsigned int bytes_length ) {
     unsigned char digest[SHA256::DIGEST_SIZE];
     memset(digest,0,SHA256::DIGEST_SIZE);
 
