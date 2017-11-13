@@ -112,21 +112,28 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
     uint64_t do_walk_start_time = gettime();
 
-    uint64_t next_step = 0;
+    uint64_t next_step = WALK_SIZE-1;
 
     picohash_ctx_t path_context;
 
     picohash_init_sha256(&path_context);
 
+    char new_val_byte_array[UINT64_BYTE_COUNT];
+
     for (int i = 0; i < NUM_STEPS ; i++) {
         uint64_t val = walk_path[next_step];
         uint64_t new_val = (val << 1) + (i % 2);
         walk_path[next_step] = new_val;
-        next_step = new_val % WALK_SIZE;
 
-        char new_val_byte_array[UINT64_BYTE_COUNT];
         uint64ToByteArr(new_val, new_val_byte_array);
         picohash_update(&path_context, new_val_byte_array , UINT64_BYTE_COUNT);
+
+        next_step = val % WALK_SIZE;
+
+        if (i < 10 || i > NUM_STEPS - 10) {
+            const string &new_val_str = bytesToHexStr(reinterpret_cast<const unsigned char *>(new_val_byte_array), UINT64_BYTE_COUNT);
+            LOG("%i next step: %llu %llu %s\n", i, next_step, new_val, new_val_str.c_str() );
+        }
     }
 
     char path_digest[PICOHASH_SHA256_DIGEST_LENGTH];
@@ -141,7 +148,7 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     return next_step;
 }
 
-void uint64ToByteArr(uint64_t val, char result[UINT64_BYTE_COUNT]) {
+void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {
     auto *p = (char *)&val;
     for(int i = 0; i < 8; i++) {
         result[i] = p[i];
