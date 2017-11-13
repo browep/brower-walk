@@ -10,7 +10,9 @@
 #include <sys/time.h>
 #include "data.h"
 #include <thread>
+#include <cstring>
 #include "sha256.h"
+#include "picohash.h"
 
 #define LOG printf
 
@@ -66,6 +68,17 @@ void tohex(unsigned char * in, size_t insz, char * out, size_t outsz)
 uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
     LOG("block header hash: %s\n", sha256(block_header, block_header_size).c_str());
+
+
+    picohash_ctx_t ctx;
+    char header_digest[PICOHASH_MD5_DIGEST_LENGTH];
+
+    picohash_init_sha256(&ctx);
+    picohash_update(&ctx, block_header, block_header_size);
+    picohash_final(&ctx, header_digest);
+
+    LOG("block header hash: %s\n", bytesToHex(reinterpret_cast<const unsigned char *>(header_digest)).c_str());
+
 
     s[0] = 0;
     s[1] = 0;

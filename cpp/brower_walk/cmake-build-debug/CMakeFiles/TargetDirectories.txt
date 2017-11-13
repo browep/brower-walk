@@ -1,3 +1,0 @@
-/home/paul/Development/brower_walk/cpp/brower_walk/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/paul/Development/brower_walk/cpp/brower_walk/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/paul/Development/brower_walk/cpp/brower_walk/cmake-build-debug/CMakeFiles/brower_walk.dir

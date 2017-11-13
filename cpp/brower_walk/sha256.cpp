@@ -20,6 +20,7 @@ const unsigned int SHA256::sha256_k[64] = //UL = uint32
          0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
          0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
 
+
 void SHA256::transform(const unsigned char *message, unsigned int block_nb)
 {
     uint32 w[64];
@@ -140,8 +141,23 @@ std::string sha256(unsigned char* bytes, unsigned int bytes_length ) {
     ctx.update(bytes, bytes_length);
     ctx.final(digest);
 
-    char buf[2*SHA256::DIGEST_SIZE+1];
-    buf[2*SHA256::DIGEST_SIZE] = 0;
+    return bytesToHex(digest);
+}
+//
+//digest = new unsigned char[SHA256::DIGEST_SIZE];
+//memset(digest,0,SHA256::DIGEST_SIZE);
+void sha256bytes(unsigned char* bytes, unsigned int bytes_length, unsigned char* digest ) {
+
+    SHA256 ctx = SHA256();
+    ctx.init();
+    ctx.update(bytes, bytes_length);
+    ctx.final(digest);
+
+}
+
+std::string bytesToHex(const unsigned char *digest) {
+    char buf[2 * SHA256::DIGEST_SIZE + 1];
+    buf[2 * SHA256::DIGEST_SIZE] = 0;
     for (int i = 0; i < SHA256::DIGEST_SIZE; i++)
         sprintf(buf+i*2, "%02x", digest[i]);
     return std::string(buf);
