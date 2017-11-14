@@ -6,6 +6,6 @@ add_compile_options(-fpermissive)
 
 set(SOURCE_FILES
         main.cpp
-        sha256.h sha256.cpp picohash.h)
+        picohash.h)
 
 add_executable(brower_walk ${SOURCE_FILES})

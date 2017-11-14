@@ -1,17 +1,13 @@
 #include <iostream>
-#include <stdint.h>
-#include <time.h>
 #include <ctime>
 #include <chrono>
 #include <math.h>
 #include <vector>
-#include <cstdio>
 #include <cinttypes>
 #include <sys/time.h>
 #include "data.h"
 #include <thread>
 #include <cstring>
-#include "sha256.h"
 #include "picohash.h"
 
 #define LOG printf
@@ -24,11 +20,7 @@ uint64_t NUM_STEPS = pow(2, 19);
 
 long long getLongLong(unsigned char *ca, bool differentEndian);
 
-void uint64ToByteArr(uint64_t val, char string1[UINT64_BYTE_COUNT]);
-
-uint64_t xorshift128plus(uint64_t *s) {
-
-}
+void uint64ToByteArr(uint64_t val, char result[UINT64_BYTE_COUNT]);
 
 uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
 
@@ -69,6 +61,14 @@ uint64_t gettime() {
             (unsigned long long) (tv.tv_usec) / 1000;
 
     return millisecondsSinceEpoch;
+}
+
+std::string bytesToHexStr(const unsigned char *digest, unsigned int size) {
+    char buf[2 * size + 1];
+    buf[2 * size] = 0;
+    for (int i = 0; i < size; i++)
+        sprintf(buf+i*2, "%02x", digest[i]);
+    return std::string(buf);
 }
 
 uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
@@ -151,19 +151,7 @@ void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {
 
 int main() {
 
-    //vector<unsigned char> hash(32);
-//    picosha2::hash256(src_str.begin(), src_str.end(), hash.begin(), hash.end());
-
-    //  string hex_str = picosha2::bytes_to_hex_string(hash.begin(), hash.end());
-
-    //cout << hex_str << endl;
-
-    //unsigned int concurentThreadsSupported = thread::hardware_concurrency();
-    //LOG("threads: %s", concurentThreadsSupported);
-
-    LOG("label           pathSize   pathCreationTime walkLength walkTime   lastStep  totalTime\n");
-
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 100; i++) {
         walk_wrapper(block_header, sizeof(block_header));
     }
 
