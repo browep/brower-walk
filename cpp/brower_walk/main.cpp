@@ -27,12 +27,7 @@ long long getLongLong(unsigned char *ca, bool differentEndian);
 void uint64ToByteArr(uint64_t val, char string1[UINT64_BYTE_COUNT]);
 
 uint64_t xorshift128plus(uint64_t *s) {
-    uint64_t x = s[0];
-    uint64_t const y = s[1];
-    s[0] = y;
-    x ^= x << 23; // a
-    s[1] = x ^ y ^ (x >> 18) ^ (y >> 5); // b, c
-    return s[1] + y;
+
 }
 
 uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
@@ -90,20 +85,23 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 //    LOG("block header hash: %s\n",
 //        bytesToHexStr(reinterpret_cast<const unsigned char *>(header_digest), SHA256::DIGEST_SIZE).c_str());
 
-    uint64_t s[2];
+    uint64_t s0 = xorByteArray(header_digest, 0, 16);
+    uint64_t s1 = xorByteArray(header_digest, 8, 24);
 
-    s[0] = xorByteArray(header_digest, 0, 16);
-    s[1] = xorByteArray(header_digest, 8, 24);
-
-//    LOG("s0: %llu\n", s[0]);
-//    LOG("s1: %llu\n", s[1]);
+//    LOG("s0: %llu\n", s0);
+//    LOG("s1: %llu\n", s1);
 
     uint64_t start_path_creation_time = gettime();
 
     auto *walk_path = new uint64_t[WALK_SIZE];
 
     for (int i = 0; i < WALK_SIZE; i++) {
-        walk_path[i] = xorshift128plus(s);
+        uint64_t x = s0;
+        uint64_t const y = s1;
+        s0 = y;
+        x ^= x << 23; // a
+        s1 = x ^ y ^ (x >> 18) ^ (y >> 5); // b, c
+        walk_path[i] = s1 + y;
     }
 
     uint64_t do_walk_start_time = gettime();
