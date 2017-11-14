@@ -9,8 +9,7 @@
 #include <thread>
 #include <cstring>
 #include "picohash.h"
-
-#define LOG printf
+#include "log.h"
 
 static const int UINT64_BYTE_COUNT = 8;
 using namespace std;
@@ -30,7 +29,7 @@ uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
         result[i] = (bytes[i + left_start] ^ bytes[i + right_start]);
     }
 
-//    LOG("arr: %s\n", bytesToHexStr(reinterpret_cast<const unsigned char *>(result), 8).c_str());
+//    log("arr: %s\n", bytesToHexStr(reinterpret_cast<const unsigned char *>(result), 8).c_str());
 
     return getLongLong(reinterpret_cast<unsigned char *>(result), true);
 }
@@ -73,7 +72,6 @@ std::string bytesToHexStr(const unsigned char *digest, unsigned int size) {
 
 uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
-//    LOG("block header hash: %s\n", sha256(block_header, block_header_size).c_str());
 
     picohash_ctx_t block_header_context;
     char header_digest[PICOHASH_SHA256_DIGEST_LENGTH];
@@ -82,14 +80,14 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     picohash_update(&block_header_context, block_header, block_header_size);
     picohash_final(&block_header_context, header_digest);
 
-//    LOG("block header hash: %s\n",
-//        bytesToHexStr(reinterpret_cast<const unsigned char *>(header_digest), SHA256::DIGEST_SIZE).c_str());
+//    log("block header hash: " +
+//        bytesToHexStr(reinterpret_cast<const unsigned char *>(header_digest), PICOHASH_SHA256_DIGEST_LENGTH));
 
     uint64_t s0 = xorByteArray(header_digest, 0, 16);
     uint64_t s1 = xorByteArray(header_digest, 8, 24);
 
-//    LOG("s0: %llu\n", s0);
-//    LOG("s1: %llu\n", s1);
+//    log("s0: %llu\n", s0);
+//    log("s1: %llu\n", s1);
 
     uint64_t start_path_creation_time = gettime();
 
@@ -129,12 +127,12 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     char path_digest[PICOHASH_SHA256_DIGEST_LENGTH];
     picohash_final(&path_context, path_digest);
 
-    LOG("final hash: %s\n",
-        bytesToHexStr(reinterpret_cast<const unsigned char *>(path_digest), PICOHASH_SHA256_DIGEST_LENGTH).c_str());
+    log("final hash: " +
+        bytesToHexStr(reinterpret_cast<const unsigned char *>(path_digest), PICOHASH_SHA256_DIGEST_LENGTH));
 
-    LOG("path creation time: %f\n", (float)(do_walk_start_time - start_path_creation_time) / 1000);
-    LOG("walk time: %f\n", (float) (gettime() - do_walk_start_time) / 1000);
-    LOG("total time: %f\n\n", (float) (gettime() - start_path_creation_time) / 1000);
+    log("path creation time: " + std::to_string((float)(do_walk_start_time - start_path_creation_time) / 1000));
+    log("walk time: " +  std::to_string((float) (gettime() - do_walk_start_time) / 1000));
+    log("total time: " + std::to_string((float) (gettime() - start_path_creation_time) / 1000) + "\n");
 
 
     delete[] walk_path;

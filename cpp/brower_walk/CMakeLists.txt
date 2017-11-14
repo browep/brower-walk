@@ -6,6 +6,6 @@ add_compile_options(-fpermissive)
 
 set(SOURCE_FILES
         main.cpp
-        picohash.h)
+        picohash.h log.h)
 
 add_executable(brower_walk ${SOURCE_FILES})
