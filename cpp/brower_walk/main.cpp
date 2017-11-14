@@ -24,8 +24,7 @@ uint64_t NUM_STEPS = pow(2, 19);
 
 long long getLongLong(unsigned char *ca, bool differentEndian);
 
-
-void uint64ToByteArr(uint64_t val, char string1[8]);
+void uint64ToByteArr(uint64_t val, char string1[UINT64_BYTE_COUNT]);
 
 uint64_t xorshift128plus(uint64_t *s) {
     uint64_t x = s[0];
@@ -44,7 +43,7 @@ uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
         result[i] = (bytes[i + left_start] ^ bytes[i + right_start]);
     }
 
-    LOG("arr: %s\n", bytesToHexStr(reinterpret_cast<const unsigned char *>(result), 8).c_str());
+//    LOG("arr: %s\n", bytesToHexStr(reinterpret_cast<const unsigned char *>(result), 8).c_str());
 
     return getLongLong(reinterpret_cast<unsigned char *>(result), true);
 }
@@ -79,7 +78,7 @@ uint64_t gettime() {
 
 uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
-    LOG("block header hash: %s\n", sha256(block_header, block_header_size).c_str());
+//    LOG("block header hash: %s\n", sha256(block_header, block_header_size).c_str());
 
     picohash_ctx_t block_header_context;
     char header_digest[PICOHASH_SHA256_DIGEST_LENGTH];
@@ -88,18 +87,18 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     picohash_update(&block_header_context, block_header, block_header_size);
     picohash_final(&block_header_context, header_digest);
 
-    LOG("block header hash: %s\n",
-        bytesToHexStr(reinterpret_cast<const unsigned char *>(header_digest), SHA256::DIGEST_SIZE).c_str());
+//    LOG("block header hash: %s\n",
+//        bytesToHexStr(reinterpret_cast<const unsigned char *>(header_digest), SHA256::DIGEST_SIZE).c_str());
 
     uint64_t s[2];
 
     s[0] = xorByteArray(header_digest, 0, 16);
     s[1] = xorByteArray(header_digest, 8, 24);
 
-    LOG("s0: %llu\n", s[0]);
-    LOG("s1: %llu\n", s[1]);
+//    LOG("s0: %llu\n", s[0]);
+//    LOG("s1: %llu\n", s[1]);
 
-    uint64_t start_walk_creation_time = gettime();
+    uint64_t start_path_creation_time = gettime();
 
     auto *walk_path = new uint64_t[WALK_SIZE];
 
@@ -127,11 +126,6 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
         next_step = val % WALK_SIZE;
 
-//        if (i < 10 || i > NUM_STEPS - 10) {
-//            const string &new_val_str = bytesToHexStr(reinterpret_cast<const unsigned char *>(new_val_byte_array),
-//                                                      UINT64_BYTE_COUNT);
-//            LOG("%i next step: %llu %llu %s\n", i, next_step, new_val, new_val_str.c_str());
-//        }
     }
 
     char path_digest[PICOHASH_SHA256_DIGEST_LENGTH];
@@ -140,7 +134,10 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     LOG("final hash: %s\n",
         bytesToHexStr(reinterpret_cast<const unsigned char *>(path_digest), PICOHASH_SHA256_DIGEST_LENGTH).c_str());
 
-    LOG("total time: %f\n", (float) (gettime() - start_walk_creation_time) / 1000);
+    LOG("path creation time: %f\n", (float)(do_walk_start_time - start_path_creation_time) / 1000);
+    LOG("walk time: %f\n", (float) (gettime() - do_walk_start_time) / 1000);
+    LOG("total time: %f\n\n", (float) (gettime() - start_path_creation_time) / 1000);
+
 
     delete[] walk_path;
 

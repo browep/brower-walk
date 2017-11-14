@@ -89,7 +89,7 @@ func createPath(blockHeader []byte) []uint64 {
 }
 
 func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan float64) {
-	//for ; ; {
+	for ; ; {
 	start := time.Now()
 	var path = createPath(blockHeader)
 	t := time.Now()
@@ -106,7 +106,7 @@ func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan 
 
 	c <- totalTime
 
-	//}
+	}
 
 }
 
