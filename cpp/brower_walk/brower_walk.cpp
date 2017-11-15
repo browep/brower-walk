@@ -82,7 +82,7 @@ std::string bytesToHexStr(const unsigned char *digest, unsigned int size) {
     return std::string(buf);
 }
 
-std::string walk_wrapper(unsigned char block_header[], size_t block_header_size) {
+float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
 
     picohash_ctx_t block_header_context;
@@ -145,12 +145,13 @@ std::string walk_wrapper(unsigned char block_header[], size_t block_header_size)
 
     log("path creation time: " + to_string((float)(do_walk_start_time - start_path_creation_time) / 1000));
     log("walk time: " +  to_string((float) (gettime() - do_walk_start_time) / 1000));
-    log("total time: " + to_string((float) (gettime() - start_path_creation_time) / 1000) + "\n");
+    float total_time = (float) (gettime() - start_path_creation_time) / 1000;
+    log("total time: " + to_string(total_time) + "\n");
 
 
     delete[] walk_path;
 
-    return final_hash;
+    return total_time;
 }
 
 void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {
@@ -160,8 +161,8 @@ void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {
     }
 }
 
-std::string mine(){
-    walk_wrapper(block_header, sizeof(block_header));
+float mine(){
+    return walk_wrapper(block_header, sizeof(block_header));
 }
 
 

@@ -7,5 +7,5 @@
 
 #include <string>
 
-std::string mine();
+float mine();
 #endif //BROWER_WALK_BROWER_WALK_H

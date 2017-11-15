@@ -9,8 +9,10 @@ Java_com_github_browep_browerwalk_MainActivity_startMiner(JNIEnv *env, jobject o
     jmethodID onHashMethod = env->GetMethodID(clazz, "onHash", "(Ljava/lang/String;)V");
 
     while(true) {
-        std::string finalHash = mine();
-        env->CallVoidMethod(minerCallback, onHashMethod, env->NewStringUTF(finalHash.c_str()));
+        float totalTime = mine();
+        char buf[5];
+        sprintf(buf, "%f", totalTime);
+        env->CallVoidMethod(minerCallback, onHashMethod, env->NewStringUTF(buf));
     }
 
     return env->NewStringUTF("");
