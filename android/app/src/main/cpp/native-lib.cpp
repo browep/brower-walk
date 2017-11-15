@@ -1,13 +1,19 @@
 #include <jni.h>
-#include <string>
+#include "brower_walk.h"
+
+
 
 extern "C"
-JNIEXPORT jstring
+JNIEXPORT jstring JNICALL
+Java_com_github_browep_browerwalk_MainActivity_stringFromJNI(JNIEnv *env, jobject instance) {
 
-JNICALL
-Java_com_github_browep_browerwalk_MainActivity_stringFromJNI(
-        JNIEnv *env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
+    return env->NewStringUTF("from native");
+}
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_github_browep_browerwalk_MainActivity_startMiner(JNIEnv *env, jobject instance) {
+
+    startMining();
+
+    return env->NewStringUTF("done");
 }

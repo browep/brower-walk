@@ -2,9 +2,12 @@ package com.github.browep.browerwalk;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.util.Log;
+import android.view.View;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MinerCallback, View.OnClickListener {
+
+    private static final String TAG = MainActivity.class.getCanonicalName();
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -16,14 +19,26 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
+        findViewById(R.id.start_mining_btn).setOnClickListener(this);
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
+    public native String startMiner();
+
+    @Override
+    public void onHash(String hash) {
+        Log.d(TAG, "hash: " + hash);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.start_mining_btn) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "starting miner");
+                    startMiner();
+                }
+            }).start();
+        }
+    }
 }
