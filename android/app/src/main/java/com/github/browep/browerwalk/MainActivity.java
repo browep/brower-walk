@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity implements MinerCallback, Vi
         findViewById(R.id.start_mining_btn).setOnClickListener(this);
     }
 
-    public native String startMiner();
+    public native String startMiner(MinerCallback minerCallback);
 
     @Override
     public void onHash(String hash) {
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements MinerCallback, Vi
                 @Override
                 public void run() {
                     Log.d(TAG, "starting miner");
-                    startMiner();
+                    startMiner(MainActivity.this);
                 }
             }).start();
         }

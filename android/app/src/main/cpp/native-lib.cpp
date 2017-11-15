@@ -11,11 +11,15 @@ Java_com_github_browep_browerwalk_MainActivity_stringFromJNI(JNIEnv *env, jobjec
 }
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_github_browep_browerwalk_MainActivity_startMiner(JNIEnv *env, jobject instance) {
+Java_com_github_browep_browerwalk_MainActivity_startMiner(JNIEnv *env, jobject obj,
+                                                          jobject minerCallback) {
+    jclass clazz = env->FindClass("com/github/browep/browerwalk/MinerCallback");
+    jmethodID onHashMethod = env->GetMethodID(clazz, "onHash", "(Ljava/lang/String;)V");
 
-    while (true) {
-        mine();
+    while(true) {
+        std::string finalHash = mine();
+        env->CallVoidMethod(minerCallback, onHashMethod);
     }
 
-    return env->NewStringUTF("done");
+    return env->NewStringUTF("");
 }
