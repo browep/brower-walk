@@ -13,7 +13,9 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_github_browep_browerwalk_MainActivity_startMiner(JNIEnv *env, jobject instance) {
 
-    startMining();
+    while (true) {
+        mine();
+    }
 
     return env->NewStringUTF("done");
 }

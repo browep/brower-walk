@@ -1,10 +1,11 @@
 //
-// Created by paul on 11/14/17.
+// Created by paul on 11/15/17.
 //
 
-#ifndef TESTCRYPTO_BROWER_WALK_H
-#define TESTCRYPTO_BROWER_WALK_H
+#ifndef BROWER_WALK_BROWER_WALK_H
+#define BROWER_WALK_BROWER_WALK_H
 
-int startMining();
+#include <string>
 
-#endif //TESTCRYPTO_BROWER_WALK_H
+std::string mine();
+#endif //BROWER_WALK_BROWER_WALK_H

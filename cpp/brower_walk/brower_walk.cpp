@@ -11,6 +11,18 @@
 #include "picohash.h"
 #include "log.h"
 
+#include <string>
+#include <sstream>
+
+template <typename T>
+std::string to_string(T value)
+{
+    std::ostringstream os ;
+    os << value ;
+    return os.str() ;
+}
+
+
 static const int UINT64_BYTE_COUNT = 8;
 using namespace std;
 
@@ -131,9 +143,9 @@ std::string walk_wrapper(unsigned char block_header[], size_t block_header_size)
     log("final hash: " +
         final_hash);
 
-    log("path creation time: " + std::to_string((float)(do_walk_start_time - start_path_creation_time) / 1000));
-    log("walk time: " +  std::to_string((float) (gettime() - do_walk_start_time) / 1000));
-    log("total time: " + std::to_string((float) (gettime() - start_path_creation_time) / 1000) + "\n");
+    log("path creation time: " + to_string((float)(do_walk_start_time - start_path_creation_time) / 1000));
+    log("walk time: " +  to_string((float) (gettime() - do_walk_start_time) / 1000));
+    log("total time: " + to_string((float) (gettime() - start_path_creation_time) / 1000) + "\n");
 
 
     delete[] walk_path;

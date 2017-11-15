@@ -22,14 +22,9 @@ std::string to_string(T value)
     return os.str() ;
 }
 
-int main()
-{
-    std::string perfect = to_string(5) ;
-}
 
 static const int UINT64_BYTE_COUNT = 8;
 using namespace std;
-
 
 uint64_t WALK_SIZE = (1024 * 1024 * 512) / 8;
 uint64_t NUM_STEPS = pow(2, 19);
@@ -37,8 +32,6 @@ uint64_t NUM_STEPS = pow(2, 19);
 long long getLongLong(unsigned char *ca, bool differentEndian);
 
 void uint64ToByteArr(uint64_t val, char result[UINT64_BYTE_COUNT]);
-
-int startMining();
 
 uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
 
@@ -89,7 +82,7 @@ std::string bytesToHexStr(const unsigned char *digest, unsigned int size) {
     return std::string(buf);
 }
 
-uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
+std::string walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
 
     picohash_ctx_t block_header_context;
@@ -146,8 +139,9 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     char path_digest[PICOHASH_SHA256_DIGEST_LENGTH];
     picohash_final(&path_context, path_digest);
 
+    const string &final_hash = bytesToHexStr(reinterpret_cast<const unsigned char *>(path_digest), PICOHASH_SHA256_DIGEST_LENGTH);
     log("final hash: " +
-        bytesToHexStr(reinterpret_cast<const unsigned char *>(path_digest), PICOHASH_SHA256_DIGEST_LENGTH));
+        final_hash);
 
     log("path creation time: " + to_string((float)(do_walk_start_time - start_path_creation_time) / 1000));
     log("walk time: " +  to_string((float) (gettime() - do_walk_start_time) / 1000));
@@ -156,7 +150,7 @@ uint64_t walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
     delete[] walk_path;
 
-    return next_step;
+    return final_hash;
 }
 
 void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {
@@ -166,12 +160,8 @@ void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {
     }
 }
 
-int startMining() {
-
-    for (int i = 0; i < 100; i++) {
-        walk_wrapper(block_header, sizeof(block_header));
-    }
-
-    return 0;
+std::string mine(){
+    return walk_wrapper(block_header, sizeof(block_header));
 }
+
 
