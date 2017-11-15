@@ -1,14 +1,6 @@
 #include <jni.h>
 #include "brower_walk.h"
 
-
-
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_github_browep_browerwalk_MainActivity_stringFromJNI(JNIEnv *env, jobject instance) {
-
-    return env->NewStringUTF("from native");
-}
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_github_browep_browerwalk_MainActivity_startMiner(JNIEnv *env, jobject obj,
@@ -18,7 +10,7 @@ Java_com_github_browep_browerwalk_MainActivity_startMiner(JNIEnv *env, jobject o
 
     while(true) {
         std::string finalHash = mine();
-        env->CallVoidMethod(minerCallback, onHashMethod);
+        env->CallVoidMethod(minerCallback, onHashMethod, env->NewStringUTF(finalHash.c_str()));
     }
 
     return env->NewStringUTF("");
