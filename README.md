@@ -79,6 +79,7 @@ The algorithm requires you to read and write 512 MB of data to system memory.  T
 
 A slow verification can lead to DDOS attacks that make a node waste time on SPAM blocks.  DDOS tools such as banning nodes or IP addreses would need to be employed.
 
+
 ## Implemenations 
 
 Included in this repository are four implemenations; C++, Java, Golang and an Android implementation with a C++/NDK implementation.  
