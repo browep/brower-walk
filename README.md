@@ -86,9 +86,13 @@ Included in this repository are four implemenations; C++, Java, Golang and an An
 For more instructions on building and deploying each.  See the following:
 
 [Java Instructions](./JAVA_INSTRUCTIONS.md) 
+
 [C++ Instrctions](./CPP_INSTRUCTIONS.md)
+
 [Go Instructions](./GO_INTRUCTIONS.md)
-[Android Instructions(./ANDROID_INSTRUCTIONS.md)
+
+[Android Instructions](./ANDROID_INSTRUCTIONS.md)
+
 
 
 
