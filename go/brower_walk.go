@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"encoding/binary"
 	"crypto/sha256"
-	"encoding/hex"
+	//"encoding/hex"
 )
 
 var (
@@ -43,11 +43,9 @@ func main() {
 	}
 
 	totalWalks := float64(0);
-	startTime := time.Now();
 	for ; ; {
 		<-c
 		totalWalks++;
-		fmt.Printf("workers: %d avg: %f seconds per walk\n", numWorkers, time.Now().Sub(startTime).Seconds()/totalWalks)
 	}
 
 	fmt.Printf("done")
@@ -56,21 +54,10 @@ func main() {
 
 func createPath(blockHeader []byte) []uint64 {
 
-	start := time.Now()
-
 	sum := sha256.Sum256(blockHeader)
-	fmt.Printf("%x\n", sum)
-
-	fmt.Printf("leftArr:  %x\n", sum[0:8])
-	fmt.Printf("rightArr:  %x\n", sum[16:24])
-	fmt.Printf("leftArr:  %x\n", sum[8:16])
-	fmt.Printf("rightArr:  %x\n", sum[24:32])
 
 	s0 := xorByteArray(sum[0:8], sum[16:24])
 	s1 := xorByteArray(sum[8:16], sum[24:32])
-
-	fmt.Printf("s0: %d\n", s0)
-	fmt.Printf("s1: %d\n", s1)
 
 	pathArray := make([]uint64, walkLength512MB)
 
@@ -83,8 +70,6 @@ func createPath(blockHeader []byte) []uint64 {
 		pathArray[i] = rng.Next()
 	}
 
-	fmt.Sprintf("path creation time: %f\n", time.Now().Sub(start).Seconds())
-
 	return pathArray
 }
 
@@ -95,14 +80,13 @@ func createAndDoWalk(threadId int, blockHeader []byte, stepCount uint64, c chan 
 	t := time.Now()
 	elapsedPathCreation := t.Sub(start)
 
-	startWalk := time.Now()
-	lastStep := doWalk(path)
+	//startWalk := time.Now()
+	_ = doWalk(path)
 	t = time.Now()
-	elapsedWalkTime := t.Sub(startWalk)
+	//elapsedWalkTime := t.Sub(startWalk)
 	totalTime := time.Now().Sub(start).Seconds()
 
-	fmt.Printf("%d %-10f       %-10d %-10f %s %-10f\n",
-		threadId, elapsedPathCreation.Seconds(), stepCount, elapsedWalkTime.Seconds(), hex.EncodeToString(lastStep), totalTime)
+	fmt.Printf("path creation time: %-10f total time: %-10f\n", elapsedPathCreation.Seconds(), totalTime)
 
 	c <- totalTime
 
@@ -127,9 +111,6 @@ func doWalk(path []uint64) []byte {
 
 		nextStep = valueAtLocation % pathLength
 
-		if i < 10 || i > numSteps-10 {
-			fmt.Printf("%d next step: %d %d %x\n", i, nextStep, newValueAtLocation, byteBuffer)
-		}
 	}
 
 	return sha_256.Sum(nil)
@@ -142,8 +123,6 @@ func xorByteArray(leftArr []byte, rightArr []byte) uint64 {
 	for i := 0; i < len(rightArr) && i < len(leftArr); i++ {
 		resArr[i] = leftArr[i] ^ rightArr[i]
 	}
-
-	fmt.Printf("result arr: %x\n", resArr)
 
 	return binary.BigEndian.Uint64(resArr)
 }
