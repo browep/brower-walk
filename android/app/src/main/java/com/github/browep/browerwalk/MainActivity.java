@@ -1,5 +1,7 @@
 package com.github.browep.browerwalk;
 
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +17,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MinerCallback, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getCanonicalName();
 
@@ -30,10 +32,14 @@ public class MainActivity extends AppCompatActivity implements MinerCallback, Vi
     private View stopMiningButton;
     private TextView hashRateTextView;
 
+    private Handler handler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        handler = new MinerHandler();
 
         View startMiningBtn = findViewById(R.id.start_mining_btn);
         startMiningBtn.setOnClickListener(this);
@@ -51,30 +57,7 @@ public class MainActivity extends AppCompatActivity implements MinerCallback, Vi
         updateThreadCount();
     }
 
-    public native String startMiner(MinerCallback minerCallback);
-
-    @Override
-    public void onHash(final String totalTimeAsFloat) {
-        Log.d(TAG, "hash time: " + totalTimeAsFloat);
-        Runnable runnable = new Runnable() {
-            public void run() {
-                times.add(Float.parseFloat(totalTimeAsFloat));
-
-                float sum = 0;
-
-                for (Float time : times) {
-                    sum += time;
-                }
-
-                sum /= times.size();
-
-                String hashRateStr = BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(threads.size()), new MathContext(3, RoundingMode.HALF_UP)).toPlainString();
-                hashRateTextView.setText(MessageFormat.format("{0} seconds per hash", hashRateStr));
-            }
-        };
-
-        runOnUiThread(runnable);
-    }
+    public native void startMiner();
 
     @Override
     public void onClick(View v) {
@@ -83,7 +66,14 @@ public class MainActivity extends AppCompatActivity implements MinerCallback, Vi
                 @Override
                 public void run() {
                     Log.d(TAG, "starting miner");
-                    startMiner(MainActivity.this);
+                    while (!Thread.interrupted()) {
+                        long startTime = System.currentTimeMillis();
+                        startMiner();
+                        long totalTime = System.currentTimeMillis() - startTime;
+                        Message msg = Message.obtain();
+                        msg.obj = BigDecimal.valueOf(totalTime).divide(BigDecimal.valueOf(1000)).floatValue();
+                        handler.sendMessage(msg);
+                    }
                 }
             });
             thread.start();
@@ -102,5 +92,27 @@ public class MainActivity extends AppCompatActivity implements MinerCallback, Vi
         threadCountTextView.setText(MessageFormat.format(getString(R.string.workers_count), threads.size()));
         stopMiningButton.setEnabled(!threads.isEmpty());
         times.clear();
+    }
+
+    private class MinerHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            times.add((Float) msg.obj);
+
+            float sum = 0;
+
+            for (Float time : times) {
+                sum += time;
+            }
+
+            sum /= times.size();
+
+            if (!threads.isEmpty()) {
+                String hashRateStr = BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(threads.size()), new MathContext(3, RoundingMode.HALF_UP)).toPlainString();
+                hashRateTextView.setText(MessageFormat.format("{0} seconds per hash", hashRateStr));
+            } else {
+                hashRateTextView.setText("-.-");
+            }
+        }
     }
 }
