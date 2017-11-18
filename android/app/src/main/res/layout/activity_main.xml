@@ -4,8 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="16dp"
     tools:context="com.github.browep.browerwalk.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/worker_button_container"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal"
+        android:layout_centerInParent="true"
+        >
+
+        <Button
+            android:id="@+id/start_mining_btn"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+
+            android:text="@string/start_worker" />
+
+        <Button
+            android:id="@+id/stop_mining_btn"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/start_mining_btn"
+            android:layout_centerHorizontal="true"
+
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+
+            android:text="@string/stop_worker" />
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/thread_count_tv"
@@ -13,38 +45,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
-        android:layout_centerInParent="true"
-
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-
-        android:text="0"
-        />
-
-    <Button
-        android:id="@+id/start_mining_btn"
-
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/thread_count_tv"
+        android:layout_above="@id/worker_button_container"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="48dp"
 
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+        android:textSize="32sp"
 
-        android:text="@string/start_worker"
+
+        android:text="0 workers"
         />
 
-    <Button
-        android:id="@+id/stop_mining_btn"
 
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/start_mining_btn"
-        android:layout_centerHorizontal="true"
-
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-
-        android:text="Stop Worker"
-        />
 
     <TextView
         android:id="@+id/hash_rate_tv"
@@ -54,6 +66,7 @@
 
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="48dp"
 
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
 
