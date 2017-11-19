@@ -108,8 +108,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sum /= times.size();
 
             if (!threads.isEmpty()) {
-                String hashRateStr = BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(threads.size()), new MathContext(3, RoundingMode.HALF_UP)).toPlainString();
-                hashRateTextView.setText(MessageFormat.format("{0} seconds per hash", hashRateStr));
+                BigDecimal secondsPerHash = BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(threads.size()), new MathContext(3, RoundingMode.HALF_UP));
+                BigDecimal hashesPerMin = BigDecimal.ONE.divide(secondsPerHash, 3, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(60));
+                hashRateTextView.setText(MessageFormat.format("{0} seconds per hash\n{1} H/m", secondsPerHash.toPlainString(), hashesPerMin.toPlainString()));
             } else {
                 hashRateTextView.setText("-.-");
             }
