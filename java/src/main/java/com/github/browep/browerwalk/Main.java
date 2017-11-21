@@ -8,7 +8,7 @@ import java.util.*;
 public class Main {
 
 
-    private static final List<Interval> times = Collections.synchronizedList(new LinkedList<>());
+    private static final LinkedList<Interval> times = new LinkedList<>();
 
     public static void main(String[] args) {
 
@@ -81,6 +81,10 @@ public class Main {
                 float hashesPerMin = 1/((float)millisPerHash) * 1000 * 60;
 
                 System.out.println(hashesPerMin + " H/m");
+
+                if (times.size() > 10) {
+                    times.pop();
+                }
             }
 
         } catch (NoSuchAlgorithmException e) {
@@ -92,7 +96,7 @@ public class Main {
         long start;
         long end;
 
-        public Interval(long start, long end) {
+        Interval(long start, long end) {
             this.start = start;
             this.end = end;
         }
