@@ -13,5 +13,7 @@ Run the jar with
 java -jar build/libs/brower-walk-*.jar
 ```
 
+There is an optional `-t NUM_THREADS` 
+
 
 
