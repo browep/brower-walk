@@ -1,22 +1,14 @@
 package com.github.browep.browerwalk;
 
-//import it.unimi.dsi.util.XorShift1024StarRandom;
-
-import javafx.util.Pair;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
 import java.util.*;
 
 public class Main {
 
 
-    private static final List<Pair<Long, Long>> times = Collections.synchronizedList(new LinkedList<>());
+    private static final List<Interval> times = Collections.synchronizedList(new LinkedList<>());
 
     public static void main(String[] args) {
 
@@ -78,9 +70,9 @@ public class Main {
 
             synchronized (times) {
 
-                times.add(new Pair<>(startTime, endTime));
+                times.add(new Interval(startTime, endTime));
 
-                long timeOverAll = endTime - times.get(0).getKey();
+                long timeOverAll = endTime - times.get(0).start;
 
                 long millisPerHash = timeOverAll / times.size();
 
@@ -93,6 +85,16 @@ public class Main {
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static class Interval {
+        long start;
+        long end;
+
+        public Interval(long start, long end) {
+            this.start = start;
+            this.end = end;
         }
     }
 }
