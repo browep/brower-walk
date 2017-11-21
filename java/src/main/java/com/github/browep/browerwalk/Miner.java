@@ -1,7 +1,5 @@
 package com.github.browep.browerwalk;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +26,7 @@ public class Miner {
      * @param inputData this is the raw data, (block header) to mine.
      * @throws NoSuchAlgorithmException thrown if the SHA-256 algo is not present on the system
      */
-    public float mineIteration(byte[] inputData) throws NoSuchAlgorithmException {
+    public byte[] mineIteration(byte[] inputData) throws NoSuchAlgorithmException {
 
         // get a SHA-256 digest of the inputdata
         MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -86,6 +84,11 @@ public class Miner {
             }
         }
 
+
+        path = null;
+
+        System.gc();
+
         // hash the last steps.  this is our results and will be compared to what the difficulty determines
         byte[] finalDigest = md.digest();
 
@@ -95,12 +98,7 @@ public class Miner {
                 " walk time: " + getTimeSinceInSeconds(walkStartTime) +
                 " total time: " + getTimeSinceInSeconds(pathCreationStartTime));
 
-
-        path = null;
-
-        System.gc();
-
-        return getTimeSinceInSeconds(pathCreationStartTime);
+        return finalDigest;
 
     }
 

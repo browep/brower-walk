@@ -2,6 +2,8 @@ package com.github.browep.browerwalk;
 
 //import it.unimi.dsi.util.XorShift1024StarRandom;
 
+import javafx.util.Pair;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -9,15 +11,12 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Main {
 
 
-    private static List<Float> times = Collections.synchronizedList(new LinkedList<Float>());
+    private static final List<Pair<Long, Long>> times = Collections.synchronizedList(new LinkedList<>());
 
     public static void main(String[] args) {
 
@@ -73,24 +72,25 @@ public class Main {
 
     private static void doMine(byte[] headerBytes, Miner miner, int finalNumThreads) {
         try {
-            float sum;
+            long startTime = System.currentTimeMillis();
+            miner.mineIteration(headerBytes);
+            long endTime = System.currentTimeMillis();
+
             synchronized (times) {
-                float totalTime = miner.mineIteration(headerBytes);
-                times.add(totalTime);
 
-                sum = 0;
+                times.add(new Pair<>(startTime, endTime));
 
-                for (Float time : times) {
-                    sum += time;
-                }
+                long timeOverAll = endTime - times.get(0).getKey();
 
-                sum /= times.size();
+                long millisPerHash = timeOverAll / times.size();
+
+                System.out.println("millisPerHash: " + millisPerHash);
+
+                float hashesPerMin = 1/((float)millisPerHash) * 1000 * 60;
+
+                System.out.println(hashesPerMin + " H/m");
             }
 
-            BigDecimal secondsPerHash = BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(finalNumThreads), new MathContext(3, RoundingMode.HALF_UP));
-            BigDecimal hashesPerMin = BigDecimal.ONE.divide(secondsPerHash, 3, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(60));
-            String hashRate = MessageFormat.format("{0} seconds per hash\n{1} H/m", secondsPerHash.toPlainString(), hashesPerMin.toPlainString());
-            System.out.println(hashRate);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
