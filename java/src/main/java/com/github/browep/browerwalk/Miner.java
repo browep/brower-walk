@@ -23,44 +23,12 @@ public class Miner {
         this.tag = tag;
     }
 
-    public void start() {
-
-        // slurp data from the binary file
-        InputStream inputStream = ClassLoader.getSystemResourceAsStream("block_header.bin");
-
-        try {
-            byte[] headerBytes = Util.readFully(inputStream, -1, true);
-            inputStream.close();
-
-            Runnable runnable = () -> mine(headerBytes);
-
-            new Thread(runnable).start();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void mine(byte[] inputData) {
-
-        log(VERBOSE,"started");
-
-        try {
-            while (true) {
-                mineIteration(inputData);
-            }
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * mine the block using the raw bytes
      * @param inputData this is the raw data, (block header) to mine.
      * @throws NoSuchAlgorithmException thrown if the SHA-256 algo is not present on the system
      */
-    private void mineIteration(byte[] inputData) throws NoSuchAlgorithmException {
+    public float mineIteration(byte[] inputData) throws NoSuchAlgorithmException {
 
         // get a SHA-256 digest of the inputdata
         MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -123,7 +91,7 @@ public class Miner {
 
         log(VERBOSE,"final result: " + Util.bytesToHex(finalDigest));
 
-        log(INFO, "path creation time: " + pathCreationTime +
+        log(INFO, tag + ": path creation time: " + pathCreationTime +
                 " walk time: " + getTimeSinceInSeconds(walkStartTime) +
                 " total time: " + getTimeSinceInSeconds(pathCreationStartTime));
 
@@ -132,10 +100,12 @@ public class Miner {
 
         System.gc();
 
+        return getTimeSinceInSeconds(pathCreationStartTime);
+
     }
 
-    private float getTimeSinceInSeconds(long pathCreationStartTime) {
-        return ((float) (System.currentTimeMillis() - pathCreationStartTime)) / 1000;
+    private float getTimeSinceInSeconds(long timeSince) {
+        return ((float) (System.currentTimeMillis() - timeSince)) / 1000;
     }
 
 
