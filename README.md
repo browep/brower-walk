@@ -94,6 +94,8 @@ For more instructions on building and deploying each.  See the following:
 
 [Android Instructions](./ANDROID_INSTRUCTIONS.md)
 
+Downloadable binaries can be found on the release page.  A current Android app can be found at [https://play.google.com/store/apps/details?id=com.github.browep.browerwalk](https://play.google.com/store/apps/details?id=com.github.browep.browerwalk)
+
 
 
 
