@@ -41,8 +41,6 @@ uint64_t xorByteArray(const char bytes[32], int left_start, int right_start) {
         result[i] = (bytes[i + left_start] ^ bytes[i + right_start]);
     }
 
-//    log("arr: %s\n", bytesToHexStr(reinterpret_cast<const unsigned char *>(result), 8).c_str());
-
     return getLongLong(reinterpret_cast<unsigned char *>(result), true);
 }
 
