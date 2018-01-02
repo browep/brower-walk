@@ -81,7 +81,7 @@ std::string bytesToHexStr(const unsigned char *digest, unsigned int size) {
 
 float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
-
+    // CUDA/OPENCL notes: this can be done in the CPU and main memory
     picohash_ctx_t block_header_context;
     char header_digest[PICOHASH_SHA256_DIGEST_LENGTH];
 
@@ -92,12 +92,15 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     uint64_t s0 = xorByteArray(header_digest, 0, 16);
     uint64_t s1 = xorByteArray(header_digest, 8, 24);
 
+    // CUDA/OPENCL notes: this memory should be allocated in the system RAM
     auto *consumed_steps = new uint64_t[NUM_STEPS];
 
     uint64_t start_path_creation_time = gettime();
 
+    // CUDA/OPENCL notes: this memory should be allocated in the GPU
     auto *walk_path = new uint64_t[WALK_SIZE];
 
+    // CUDA/OPENCL notes: this is writing the memory in the GPU and should run as a GPU process
     for (int i = 0; i < WALK_SIZE; i++) {
         uint64_t x = s0;
         uint64_t const y = s1;
@@ -107,12 +110,14 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
         walk_path[i] = s1 + y;
     }
 
+    // CUDA/OPENCL notes: this function profiling is not necessary and can be omitted
     uint64_t do_walk_start_time = gettime();
 
     uint64_t next_step = WALK_SIZE - 1;
 
     char new_val_byte_array[UINT64_BYTE_COUNT];
 
+    // CUDA/OPENCL notes: steps through the memory of the GPU
     for (int i = 0; i < NUM_STEPS; i++) {
         uint64_t val = walk_path[next_step];
         uint64_t new_val = (val << 1) + (i % 2);
@@ -121,9 +126,12 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
         consumed_steps[i] = new_val;
 
         next_step = val % WALK_SIZE;
-
     }
 
+    delete[] walk_path;
+
+    // CUDA/OPENCL notes: done with GPU processes and memory.  it can be cleaned up.  The rest of the function can be
+    // run in the CPU and main memory
     picohash_ctx_t path_context;
 
     picohash_init_sha256(&path_context);
@@ -145,8 +153,6 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     log("walk time: " + to_string((float) (gettime() - do_walk_start_time) / 1000));
     float total_time = (float) (gettime() - start_path_creation_time) / 1000;
     log("total time: " + to_string(total_time) + "\n");
-
-    delete[] walk_path;
 
     return total_time;
 }
