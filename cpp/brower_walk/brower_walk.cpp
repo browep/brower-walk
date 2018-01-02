@@ -92,14 +92,8 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     picohash_update(&block_header_context, block_header, block_header_size);
     picohash_final(&block_header_context, header_digest);
 
-//    log("block header hash: " +
-//        bytesToHexStr(reinterpret_cast<const unsigned char *>(header_digest), PICOHASH_SHA256_DIGEST_LENGTH));
-
     uint64_t s0 = xorByteArray(header_digest, 0, 16);
     uint64_t s1 = xorByteArray(header_digest, 8, 24);
-
-//    log("s0: %llu\n", s0);
-//    log("s1: %llu\n", s1);
 
     uint64_t start_path_creation_time = gettime();
 
