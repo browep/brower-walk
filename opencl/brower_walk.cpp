@@ -14,12 +14,11 @@
 #include <string>
 #include <sstream>
 
-template <typename T>
-std::string to_string(T value)
-{
-    std::ostringstream os ;
-    os << value ;
-    return os.str() ;
+template<typename T>
+std::string to_string(T value) {
+    std::ostringstream os;
+    os << value;
+    return os.str();
 }
 
 
@@ -76,7 +75,7 @@ std::string bytesToHexStr(const unsigned char *digest, unsigned int size) {
     char buf[2 * size + 1];
     buf[2 * size] = 0;
     for (int i = 0; i < size; i++)
-        sprintf(buf+i*2, "%02x", digest[i]);
+        sprintf(buf + i * 2, "%02x", digest[i]);
     return std::string(buf);
 }
 
@@ -92,6 +91,8 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
     uint64_t s0 = xorByteArray(header_digest, 0, 16);
     uint64_t s1 = xorByteArray(header_digest, 8, 24);
+
+    auto *consumed_steps = new uint64_t[NUM_STEPS];
 
     uint64_t start_path_creation_time = gettime();
 
@@ -110,10 +111,6 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
 
     uint64_t next_step = WALK_SIZE - 1;
 
-    picohash_ctx_t path_context;
-
-    picohash_init_sha256(&path_context);
-
     char new_val_byte_array[UINT64_BYTE_COUNT];
 
     for (int i = 0; i < NUM_STEPS; i++) {
@@ -121,25 +118,33 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
         uint64_t new_val = (val << 1) + (i % 2);
         walk_path[next_step] = new_val;
 
-        uint64ToByteArr(new_val, new_val_byte_array);
-        picohash_update(&path_context, new_val_byte_array, UINT64_BYTE_COUNT);
+        consumed_steps[i] = new_val;
 
         next_step = val % WALK_SIZE;
 
     }
 
+    picohash_ctx_t path_context;
+
+    picohash_init_sha256(&path_context);
+
+    for (int i=0; i < NUM_STEPS; i++) {
+        uint64ToByteArr(consumed_steps[i], new_val_byte_array);
+        picohash_update(&path_context, new_val_byte_array, UINT64_BYTE_COUNT);
+    }
+
     char path_digest[PICOHASH_SHA256_DIGEST_LENGTH];
+
     picohash_final(&path_context, path_digest);
 
-    const string &final_hash = bytesToHexStr(reinterpret_cast<const unsigned char *>(path_digest), PICOHASH_SHA256_DIGEST_LENGTH);
-    log("final hash: " +
-        final_hash);
+    const string &final_hash = bytesToHexStr(reinterpret_cast<const unsigned char *>(path_digest),
+                                             PICOHASH_SHA256_DIGEST_LENGTH);
+    log("final hash: " + final_hash);
 
-    log("path creation time: " + to_string((float)(do_walk_start_time - start_path_creation_time) / 1000));
-    log("walk time: " +  to_string((float) (gettime() - do_walk_start_time) / 1000));
+    log("path creation time: " + to_string((float) (do_walk_start_time - start_path_creation_time) / 1000));
+    log("walk time: " + to_string((float) (gettime() - do_walk_start_time) / 1000));
     float total_time = (float) (gettime() - start_path_creation_time) / 1000;
     log("total time: " + to_string(total_time) + "\n");
-
 
     delete[] walk_path;
 
@@ -153,7 +158,7 @@ void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {
     }
 }
 
-float mine(){
+float mine() {
     return walk_wrapper(block_header, sizeof(block_header));
 }
 

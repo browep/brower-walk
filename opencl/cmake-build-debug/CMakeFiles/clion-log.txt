@@ -1,4 +1,0 @@
-/home/paul/clion-2017.2.3/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -fpermissive -G "CodeBlocks - Unix Makefiles" /home/paul/Development/brower_walk/cpp/brower_walk
--- Configuring done
--- Generating done
--- Build files have been written to: /home/paul/Development/brower_walk/cpp/brower_walk/cmake-build-debug
