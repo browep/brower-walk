@@ -4,6 +4,10 @@ import hashlib
 import binascii
 import struct
 from ctypes import c_longlong as ll
+import pyopencl as cl
+
+ctx = cl.create_some_context()
+queue = cl.CommandQueue(ctx)
 
 fh = open('./block_header.bin', 'rb')
 
