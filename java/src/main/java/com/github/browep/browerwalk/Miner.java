@@ -14,7 +14,7 @@ public class Miner {
     private static final long NUM_STEPS = (long) Math.pow(2, 19);
 
     private long[] path;
-    private XorShifPlusRandomGenerator rng;
+    private XorShiftPlusRandomGenerator rng;
     private String tag;
 
     public Miner(String tag) {
@@ -54,7 +54,7 @@ public class Miner {
         path = new long[SIZE_IN_MBs / 8];
 
         // create the random number generator, seeded with the xor'ed hash
-        rng = new XorShifPlusRandomGenerator(s0, s1);
+        rng = new XorShiftPlusRandomGenerator(s0, s1);
 
         // fill the path
         for (int i = 0; i < path.length; i++) {

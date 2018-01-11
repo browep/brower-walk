@@ -1,11 +1,11 @@
 package com.github.browep.browerwalk;
 
-public class XorShifPlusRandomGenerator {
+public class XorShiftPlusRandomGenerator {
 
     long s0;
     long s1;
 
-    public XorShifPlusRandomGenerator(long s0, long s1) {
+    public XorShiftPlusRandomGenerator(long s0, long s1) {
         this.s0 = s0;
         this.s1 = s1;
     }
