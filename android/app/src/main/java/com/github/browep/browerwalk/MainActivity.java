@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private List<Thread> threads = new LinkedList<>();
-    private List<Float> times = new LinkedList<>();
+    private LinkedList<Interval> times = new LinkedList<>();
     private TextView threadCountTextView;
     private View stopMiningButton;
     private TextView hashRateTextView;
@@ -69,9 +69,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     while (!Thread.interrupted()) {
                         long startTime = System.currentTimeMillis();
                         startMiner();
-                        long totalTime = System.currentTimeMillis() - startTime;
                         Message msg = Message.obtain();
-                        msg.obj = BigDecimal.valueOf(totalTime).divide(BigDecimal.valueOf(1000)).floatValue();
+                        msg.obj = new Interval(startTime, System.currentTimeMillis());
                         handler.sendMessage(msg);
                     }
                 }
@@ -97,23 +96,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private class MinerHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            times.add((Float) msg.obj);
 
-            float sum = 0;
+            Interval interval = (Interval) msg.obj;
 
-            for (Float time : times) {
-                sum += time;
-            }
+            times.add(interval);
 
-            sum /= times.size();
+
 
             if (!threads.isEmpty()) {
-                BigDecimal secondsPerHash = BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(threads.size()), new MathContext(3, RoundingMode.HALF_UP));
-                BigDecimal hashesPerMin = BigDecimal.ONE.divide(secondsPerHash, 3, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(60));
-                hashRateTextView.setText(MessageFormat.format("{0} seconds per hash\n{1} H/m", secondsPerHash.toPlainString(), hashesPerMin.toPlainString()));
+                long timeOverAll = interval.end - times.get(0).start;
+
+                long millisPerHash = timeOverAll / times.size();
+
+                float hashesPerMin = 1/((float)millisPerHash) * 1000 * 60;
+
+                hashRateTextView.setText(MessageFormat.format("{0} seconds per hash\n{1} H/m", millisPerHash/1000, hashesPerMin));
             } else {
                 hashRateTextView.setText("-.-");
             }
+
+            if (times.size() > 10) {
+                times.pop();
+            }
+        }
+    }
+
+    public static class Interval {
+        long start;
+        long end;
+
+        Interval(long start, long end) {
+            this.start = start;
+            this.end = end;
         }
     }
 }
