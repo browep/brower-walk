@@ -5,8 +5,12 @@
 #ifndef BROWER_WALK_LOG_H
 #define BROWER_WALK_LOG_H
 
-
-#include <stdio.h>
+#ifdef _MSC_VER
+    #include <iostream>
+    #include <string>
+#else
+    #include <stdio.h>
+#endif
 
 int log(std::string str) {
     std::cout << str << std::endl;
