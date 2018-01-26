@@ -4,12 +4,15 @@
 #include <math.h>
 #include <vector>
 #include <cinttypes>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 #include "data.h"
+#include "log.h"
 #include <thread>
 #include <cstring>
 #include "picohash.h"
-#include "log.h"
+#include "brower_walk_cuda.h"
 
 #include <string>
 #include <sstream>
@@ -58,6 +61,7 @@ long long getLongLong(unsigned char *ca, bool differentEndian) {
     return retVal;
 }
 
+#ifndef _MSC_VER
 uint64_t gettime() {
 
     struct timeval tv;
@@ -70,9 +74,9 @@ uint64_t gettime() {
 
     return millisecondsSinceEpoch;
 }
+#endif
 
-std::string bytesToHexStr(const unsigned char *digest, unsigned int size) {
-    char buf[2 * size + 1];
+std::string bytesToHexStr(const unsigned char *digest, char *buf, unsigned int size) {
     buf[2 * size] = 0;
     for (int i = 0; i < size; i++)
         sprintf(buf + i * 2, "%02x", digest[i]);
@@ -95,43 +99,27 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     // CUDA/OPENCL notes: this memory should be allocated in the system RAM
     auto *consumed_steps = new uint64_t[NUM_STEPS];
 
+#ifndef _MSC_VER
     uint64_t start_path_creation_time = gettime();
+#endif
 
     // CUDA/OPENCL notes: this memory should be allocated in the GPU
-    auto *walk_path = new uint64_t[WALK_SIZE];
+    uint64_t * walk_path_gpu;
 
     // CUDA/OPENCL notes: this is writing the memory in the GPU and should run as a GPU process
-    for (int i = 0; i < WALK_SIZE; i++) {
-        uint64_t x = s0;
-        uint64_t const y = s1;
-        s0 = y;
-        x ^= x << 23; // a
-        s1 = x ^ y ^ (x >> 18) ^ (y >> 5); // b, c
-        walk_path[i] = s1 + y;
-    }
+    brower_walk_init_wrapper(WALK_SIZE, s0, s1, &walk_path_gpu);
 
     // CUDA/OPENCL notes: this function profiling is not necessary and can be omitted
+#ifndef _MSC_VER
     uint64_t do_walk_start_time = gettime();
-
-    uint64_t next_step = WALK_SIZE - 1;
-
-    char new_val_byte_array[UINT64_BYTE_COUNT];
+#endif
 
     // CUDA/OPENCL notes: steps through the memory of the GPU
-    for (int i = 0; i < NUM_STEPS; i++) {
-        uint64_t val = walk_path[next_step];
-        uint64_t new_val = (val << 1) + (i % 2);
-        walk_path[next_step] = new_val;
-
-        consumed_steps[i] = new_val;
-
-        next_step = val % WALK_SIZE;
-    }
-
-    delete[] walk_path;
+    brower_walk_wrapper(NUM_STEPS, WALK_SIZE, walk_path_gpu, consumed_steps);
 
     // CUDA/OPENCL notes: done with GPU processes and memory.  it can be cleaned up.  The rest of the function can be
     // run in the CPU and main memory
+    char new_val_byte_array[UINT64_BYTE_COUNT];
     picohash_ctx_t path_context;
 
     picohash_init_sha256(&path_context);
@@ -142,19 +130,25 @@ float walk_wrapper(unsigned char block_header[], size_t block_header_size) {
     }
 
     char path_digest[PICOHASH_SHA256_DIGEST_LENGTH];
+    char path_digest_str[2*PICOHASH_SHA256_DIGEST_LENGTH+1];
 
     picohash_final(&path_context, path_digest);
 
     const string &final_hash = bytesToHexStr(reinterpret_cast<const unsigned char *>(path_digest),
+                                             path_digest_str,
                                              PICOHASH_SHA256_DIGEST_LENGTH);
     log("final hash: " + final_hash);
 
+#ifdef _MSC_VER
+    return 0.0;
+#else
     log("path creation time: " + to_string((float) (do_walk_start_time - start_path_creation_time) / 1000));
     log("walk time: " + to_string((float) (gettime() - do_walk_start_time) / 1000));
     float total_time = (float) (gettime() - start_path_creation_time) / 1000;
     log("total time: " + to_string(total_time) + "\n");
 
     return total_time;
+#endif
 }
 
 void uint64ToByteArr(const uint64_t val, char result[UINT64_BYTE_COUNT]) {

@@ -26,7 +26,9 @@
 #define _PICOHASH_BIG_ENDIAN
 #endif
 #else               // ! defined __LITTLE_ENDIAN__
+#ifndef _MSC_VER
 #include <endian.h> // machine/endian.h
+#endif
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define _PICOHASH_BIG_ENDIAN
 #endif
@@ -158,7 +160,11 @@ static const void *_picohash_md5_body(_picohash_md5_ctx_t *ctx, const void *data
     uint_fast32_t a, b, c, d;
     uint_fast32_t saved_a, saved_b, saved_c, saved_d;
 
+#ifdef _MSC_VER
+    ptr = reinterpret_cast<unsigned char*>(const_cast<void*>(data));
+#else
     ptr = data;
+#endif
 
     a = ctx->a;
     b = ctx->b;
@@ -306,7 +312,11 @@ inline void _picohash_md5_update(_picohash_md5_ctx_t *ctx, const void *data, siz
 
 inline void _picohash_md5_final(_picohash_md5_ctx_t *ctx, void *_digest)
 {
+#ifdef _MSC_VER
+    unsigned char *digest = reinterpret_cast<unsigned char*>(const_cast<void*>(_digest));
+#else
     unsigned char *digest = _digest;
+#endif
     unsigned long used, free;
 
     used = ctx->lo & 0x3f;
@@ -432,7 +442,11 @@ inline void _picohash_sha1_init(_picohash_sha1_ctx_t *s)
 
 inline void _picohash_sha1_update(_picohash_sha1_ctx_t *s, const void *_data, size_t len)
 {
+#ifdef _MSC_VER
+    const uint8_t *data  = reinterpret_cast<uint8_t*>(const_cast<void*>(_data));
+#else
     const uint8_t *data = _data;
+#endif
     for (; len != 0; --len) {
         ++s->byteCount;
         _picohash_sha1_add_uncounted(s, *data++);
@@ -532,7 +546,11 @@ static inline void _picohash_sha256_compress(_picohash_sha256_ctx_t *ctx, unsign
 
 static inline void _picohash_sha256_do_final(_picohash_sha256_ctx_t *ctx, void *digest, size_t len)
 {
+#ifdef _MSC_VER
+    unsigned char *out = reinterpret_cast<unsigned char *>(const_cast<void*>(digest));
+#else
     unsigned char *out = digest;
+#endif
     size_t i;
 
     /* increase the length of the message */
@@ -588,7 +606,11 @@ inline void _picohash_sha256_init(_picohash_sha256_ctx_t *ctx)
 
 inline void _picohash_sha256_update(_picohash_sha256_ctx_t *ctx, const void *data, size_t len)
 {
+#ifdef _MSC_VER
+    const unsigned char *in = reinterpret_cast<unsigned char *>(const_cast<void*>(data));
+#else
     const unsigned char *in = data;
+#endif
     size_t n;
 
     while (len > 0) {
@@ -642,9 +664,15 @@ inline void picohash_init_md5(picohash_ctx_t *ctx)
 {
     ctx->block_length = PICOHASH_MD5_BLOCK_LENGTH;
     ctx->digest_length = PICOHASH_MD5_DIGEST_LENGTH;
+#ifdef _MSC_VER
+    ctx->_reset = (void (__cdecl *)(void *))_picohash_md5_init;
+    ctx->_update = (void (__cdecl *)(void *,const void *,std::size_t))_picohash_md5_update;
+    ctx->_final = (void (__cdecl *)(void *,void *))_picohash_md5_final;
+#else
     ctx->_reset = (void *)_picohash_md5_init;
     ctx->_update = (void *)_picohash_md5_update;
     ctx->_final = (void *)_picohash_md5_final;
+#endif
 
     _picohash_md5_init(&ctx->_md5);
 }
@@ -653,9 +681,16 @@ inline void picohash_init_sha1(picohash_ctx_t *ctx)
 {
     ctx->block_length = PICOHASH_SHA1_BLOCK_LENGTH;
     ctx->digest_length = PICOHASH_SHA1_DIGEST_LENGTH;
+#ifdef _MSC_VER
+    ctx->_reset = (void (__cdecl *)(void *))_picohash_sha1_init;
+    ctx->_update = (void (__cdecl *)(void *,const void *,std::size_t))_picohash_sha1_update;
+    ctx->_final = (void (__cdecl *)(void *,void *))_picohash_sha1_final;
+#else
     ctx->_reset = (void *)_picohash_sha1_init;
     ctx->_update = (void *)_picohash_sha1_update;
     ctx->_final = (void *)_picohash_sha1_final;
+#endif
+
     _picohash_sha1_init(&ctx->_sha1);
 }
 
@@ -663,9 +698,16 @@ inline void picohash_init_sha224(picohash_ctx_t *ctx)
 {
     ctx->block_length = PICOHASH_SHA224_BLOCK_LENGTH;
     ctx->digest_length = PICOHASH_SHA224_DIGEST_LENGTH;
+#ifdef _MSC_VER
+    ctx->_reset = (void (__cdecl *)(void *))_picohash_sha224_init;
+    ctx->_update = (void (__cdecl *)(void *,const void *,std::size_t))_picohash_sha256_update;
+    ctx->_final = (void (__cdecl *)(void *,void *))_picohash_sha224_final;
+#else
     ctx->_reset = (void *)_picohash_sha224_init;
     ctx->_update = (void *)_picohash_sha256_update;
     ctx->_final = (void *)_picohash_sha224_final;
+#endif
+
     _picohash_sha224_init(&ctx->_sha256);
 }
 
@@ -673,9 +715,16 @@ inline void picohash_init_sha256(picohash_ctx_t *ctx)
 {
     ctx->block_length = PICOHASH_SHA256_BLOCK_LENGTH;
     ctx->digest_length = PICOHASH_SHA256_DIGEST_LENGTH;
+#ifdef _MSC_VER
+    ctx->_reset = (void (__cdecl *)(void *))_picohash_sha256_init;
+    ctx->_update = (void (__cdecl *)(void *,const void *,std::size_t))_picohash_sha256_update;
+    ctx->_final = (void (__cdecl *)(void *,void *))_picohash_sha256_final;
+#else
     ctx->_reset = (void *)_picohash_sha256_init;
     ctx->_update = (void *)_picohash_sha256_update;
     ctx->_final = (void *)_picohash_sha256_final;
+#endif
+
     _picohash_sha256_init(&ctx->_sha256);
 }
 
@@ -741,8 +790,13 @@ inline void picohash_init_hmac(picohash_ctx_t *ctx, void (*initf)(picohash_ctx_t
     /* replace reset and final function */
     ctx->_hmac.hash_reset = ctx->_reset;
     ctx->_hmac.hash_final = ctx->_final;
+#ifdef _MSC_VER
+    ctx->_reset = (void (__cdecl *)(void *))_picohash_hmac_reset;
+    ctx->_final = (void (__cdecl *)(void *,void *))_picohash_hmac_final;
+#else
     ctx->_reset = (void *)_picohash_hmac_reset;
     ctx->_final = (void *)_picohash_hmac_final;
+#endif
 
     /* start calculating the inner hash */
     _picohash_hmac_apply_key(ctx, 0x36);
